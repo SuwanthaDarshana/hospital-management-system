@@ -1,19 +1,22 @@
 server:
-  port: 8082
+  port: 8081
 
 spring:
   application:
     name: doctor-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/doctor_db
-    username: postgres
-    password: postgres
+    url: jdbc:mysql://localhost:3306/hms_doctor?useSSL=false&serverTimezone=UTC
+    username: root
+    password: Suwa99@#
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
 eureka:
   client:

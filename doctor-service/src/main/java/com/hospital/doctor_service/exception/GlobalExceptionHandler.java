@@ -1,5 +1,6 @@
 package com.hospital.doctor_service.exception;
 
+import com.hospital.doctor_service.dto.StandardResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,20 +14,44 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<?> handleNotFound(ResourceNotFoundException exception) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", exception.getMessage());
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    public ResponseEntity<StandardResponseDTO<Object>> handleNotFound(ResourceNotFoundException exception) {
+        return new ResponseEntity<>(
+                StandardResponseDTO.builder()
+                        .success(false)
+                        .message(exception.getMessage())
+                        .data(null)
+                        .build(),
+                HttpStatus.NOT_FOUND
+        );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidation(MethodArgumentNotValidException exception) {
+    public ResponseEntity<StandardResponseDTO<Map<String,String>>> handleValidation(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();
         exception.getBindingResult().getFieldErrors()
                 .forEach(err -> errors.put(err.getField(), err.getDefaultMessage()));
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(
+                StandardResponseDTO.<Map<String, String>>builder()
+                        .success(false)
+                        .message("Validation failed")
+                        .data(errors)
+                        .build(),
+                HttpStatus.BAD_REQUEST
+        );
     }
 
-    public ResponseEntity<?> handleGlobal
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<StandardResponseDTO<Object>> handleGlobal(Exception exception){
+
+        return new ResponseEntity<>(
+                StandardResponseDTO.builder()
+                        .success(false)
+                        .message("Internal Server Error: " + exception.getMessage())
+                        .data(null)
+                        .build(),
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+
 
 }
