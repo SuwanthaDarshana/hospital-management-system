@@ -9,6 +9,7 @@ spring:
     url: jdbc:mysql://localhost:3306/hms_doctor?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
     username: root
     password: Suwa99@#
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:

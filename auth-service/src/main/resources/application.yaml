@@ -1,3 +1,35 @@
+
+server:
+  port: 8082
+
 spring:
   application:
     name: auth-service
+
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/hms_auth?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+    username: root
+    password: Suwa99@#
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  jackson:
+    serialization:
+      indent-output: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+jwt:
+  secret: HOSPITAL_SECRET_KEY
+  expiration: 86400000   # 1 day in ms
