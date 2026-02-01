@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class Doctor {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
@@ -34,7 +34,9 @@ public class Doctor {
     @Column(columnDefinition = "TEXT")
     private String availability;
 
+
     private LocalDateTime createdAt = LocalDateTime.now();
+
     private LocalDateTime updatedAt = LocalDateTime.now();
 
 

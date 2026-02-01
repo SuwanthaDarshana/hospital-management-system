@@ -8,11 +8,11 @@ spring:
     gateway:
       routes:
         - id: doctor-service
-          uri: lb://DOCTOR-SERVICE
+          uri: lb://doctor-service
           predicates:
             - Path=/api/v1/doctors/**
           filters:
-            - JwtFilter
+            name: JwtFilter
 
 eureka:
   client:

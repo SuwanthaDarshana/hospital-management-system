@@ -6,7 +6,7 @@ spring:
     name: doctor-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/hms_doctor?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/hms_doctor?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
     username: root
     password: Suwa99@#
 
