@@ -39,17 +39,22 @@ public class AuthServiceImpl implements AuthService {
 
         User user = User.builder()
                 .email(registerRequestDTO.getEmail())
-                .username(registerRequestDTO.getUsername())
                 .password(passwordEncoder.encode(registerRequestDTO.getPassword()))
                 .role(Role.valueOf(registerRequestDTO.getRole()))
+                .username(registerRequestDTO.getRole().equals("DOCTOR") ? registerRequestDTO.getEmail() : registerRequestDTO.getUsername()) // only set username for non-doctors
                 .build();
 
         userRepository.save(user);
 
         if (user.getRole() == Role.DOCTOR) {
-            DoctorCreatedEvent event = new DoctorCreatedEvent();
-            event.setEmail(user.getEmail());
-            event.setUsername(user.getUsername());
+            DoctorCreatedEvent event = DoctorCreatedEvent.builder()
+                    .userId(user.getId())
+                    .email(user.getEmail())
+                    .firstName(registerRequestDTO.getFirstName())
+                    .lastName(registerRequestDTO.getLastName())
+                    .phone(registerRequestDTO.getPhone())
+                    .specialization(registerRequestDTO.getSpecialization())
+                    .build();
 
             rabbitTemplate.convertAndSend(
                     RabbitConfig.DOCTOR_EXCHANGE,

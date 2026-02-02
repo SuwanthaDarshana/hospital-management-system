@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 @RequiredArgsConstructor
 public class DoctorEventListener {
@@ -15,12 +17,21 @@ public class DoctorEventListener {
     @RabbitListener(queues = "doctor.queue")
     public void handleDoctorCreated(DoctorCreatedEvent event) {
 
+        System.out.println("📥 Received doctor from Auth Service: " + event.getEmail());
+
         Doctor doctor = Doctor.builder()
+                .authUserId(event.getUserId())   // <-- Link to Auth Service user
                 .email(event.getEmail())
-                .firstName(event.getUsername())
-                .specialization("GENERAL")
+                .firstName(event.getFirstName())
+                .lastName(event.getLastName())
+                .phone(event.getPhone())
+                .specialization(event.getSpecialization())
+                .availability("NOT_SET")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
 
         doctorRepository.save(doctor);
+        System.out.println("✅ Doctor saved in Doctor Service DB");
     }
 }

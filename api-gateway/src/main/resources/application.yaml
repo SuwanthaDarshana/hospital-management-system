@@ -10,9 +10,9 @@ spring:
         - id: auth-service
           uri: lb://auth-service
           predicates:
-            - Path=/auth/**
+            - Path=/api/auth/**
           filters:
-            - RewritePath=/auth/(?<segment>.*), /api/auth/${segment}
+            - RewritePath=/api/auth/(?<segment>.*), /api/auth/${segment}
 
         - id: doctor-service
           uri: lb://doctor-service

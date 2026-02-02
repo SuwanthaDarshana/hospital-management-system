@@ -6,7 +6,6 @@ import com.hospital.doctor_service.dto.DoctorResponseDTO;
 import java.util.List;
 
 public interface DoctorService {
-    DoctorResponseDTO createDoctor(DoctorRequestDTO doctorRequestDTO);
     List<DoctorResponseDTO> getAllDoctors();
     DoctorResponseDTO getDoctorById(Long id);
     DoctorResponseDTO updateDoctor(Long id,DoctorRequestDTO doctorRequestDTO);

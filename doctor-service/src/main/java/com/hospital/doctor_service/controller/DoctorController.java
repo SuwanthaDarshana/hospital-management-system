@@ -19,18 +19,6 @@ public class DoctorController {
 
     private final DoctorService doctorService;
 
-    @PostMapping
-    public ResponseEntity<StandardResponseDTO<DoctorResponseDTO>> createDoctor(@Validated @RequestBody DoctorRequestDTO doctorRequestDTO) {
-        DoctorResponseDTO doctor = doctorService.createDoctor(doctorRequestDTO);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(StandardResponseDTO.<DoctorResponseDTO>builder()
-                        .success(true)
-                        .message("Doctor created successfully")
-                        .data(doctor)
-                        .build()
-                );
-    }
 
     @GetMapping
     public ResponseEntity<StandardResponseDTO<List<DoctorResponseDTO>>> getAllDoctors() {

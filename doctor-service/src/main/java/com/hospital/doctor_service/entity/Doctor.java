@@ -34,6 +34,9 @@ public class Doctor {
     @Column(columnDefinition = "TEXT")
     private String availability;
 
+    @Column(nullable = false, unique = true)
+    private Long authUserId;   // <-- Link to Auth Service User
+
 
     private LocalDateTime createdAt = LocalDateTime.now();
 

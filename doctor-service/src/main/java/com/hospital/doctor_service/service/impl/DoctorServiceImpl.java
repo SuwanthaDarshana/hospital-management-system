@@ -20,20 +20,7 @@ public class DoctorServiceImpl implements DoctorService {
 
     private final DoctorRepository doctorRepository;
 
-    public DoctorResponseDTO createDoctor(DoctorRequestDTO doctorRequestDTO){
-        Doctor doctor = Doctor.builder()
-                .firstName(doctorRequestDTO.getFirstName())
-                .lastName(doctorRequestDTO.getLastName())
-                .email(doctorRequestDTO.getEmail())
-                .phone(doctorRequestDTO.getPhone())
-                .specialization(doctorRequestDTO.getSpecialization())
-                .availability(doctorRequestDTO.getAvailability())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-        Doctor saved = doctorRepository.save(doctor);
-        return mapToResponse(saved);
-    }
+
 
     @Override
     public List<DoctorResponseDTO> getAllDoctors() {
@@ -53,9 +40,6 @@ public class DoctorServiceImpl implements DoctorService {
     public DoctorResponseDTO updateDoctor(Long id, DoctorRequestDTO doctorRequestDTO) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("Doctor not found with id: " + id));
-        doctor.setFirstName(doctorRequestDTO.getFirstName());
-        doctor.setLastName(doctorRequestDTO.getLastName());
-        doctor.setEmail(doctorRequestDTO.getEmail());
         doctor.setPhone(doctorRequestDTO.getPhone());
         doctor.setSpecialization(doctorRequestDTO.getSpecialization());
         doctor.setAvailability(doctorRequestDTO.getAvailability());

@@ -15,9 +15,18 @@ public class RegisterRequestDTO {
     @Email
     @NotBlank
     private String email;
-    
-    @NotBlank
+
     private String username;
+
+    @NotBlank
+    private String firstName;
+
+    @NotBlank
+    private String lastName;
+
+    private String phone;
+
+    private String specialization;
 
     @Size(min = 6, message = "Password must be at least 6 characters long")
     private String password;
