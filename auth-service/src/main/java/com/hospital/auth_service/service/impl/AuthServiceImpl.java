@@ -1,6 +1,8 @@
 package com.hospital.auth_service.service.impl;
 
+import com.hospital.auth_service.config.RabbitConfig;
 import com.hospital.auth_service.dto.AuthResponseDTO;
+import com.hospital.auth_service.dto.DoctorCreatedEvent;
 import com.hospital.auth_service.dto.LoginRequestDTO;
 import com.hospital.auth_service.dto.RegisterRequestDTO;
 import com.hospital.auth_service.entity.Role;
@@ -10,6 +12,7 @@ import com.hospital.auth_service.service.AuthService;
 import com.hospital.auth_service.util.JwtUtil;
 import jakarta.ws.rs.BadRequestException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +23,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+    private final RabbitTemplate rabbitTemplate;
+
 
 
 
@@ -40,6 +45,21 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         userRepository.save(user);
+
+        if (user.getRole() == Role.DOCTOR) {
+            DoctorCreatedEvent event = new DoctorCreatedEvent();
+            event.setEmail(user.getEmail());
+            event.setUsername(user.getUsername());
+
+            rabbitTemplate.convertAndSend(
+                    RabbitConfig.DOCTOR_EXCHANGE,
+                    RabbitConfig.DOCTOR_ROUTING_KEY,
+                    event
+            );
+            System.out.println("✅ RabbitMQ: Doctor registration event sent for " + user.getEmail());
+        }
+
+
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
 
         return AuthResponseDTO.builder()
@@ -47,6 +67,7 @@ public class AuthServiceImpl implements AuthService {
                 .email(user.getEmail())
                 .role(user.getRole().name())
                 .username(user.getUsername())
+                .id(String.valueOf(user.getId())) // get id from user
                 .build();
     }
 
@@ -65,6 +86,7 @@ public class AuthServiceImpl implements AuthService {
                 .email(user.getEmail())
                 .role(user.getRole().name())
                 .username(user.getUsername())
+                .id(String.valueOf(user.getId())) // get id from user
                 .build();
     }
 }

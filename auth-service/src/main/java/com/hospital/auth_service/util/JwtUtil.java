@@ -10,7 +10,7 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private final String SECRET = "HOSPITAL_SECRET_KEY";
+    private final String SECRET = "HOSPITAL_SECRET_KEY_HOSPITAL_SECRET_KEY";
 
     public String generateToken(String email, String role) {
         return  Jwts.builder()

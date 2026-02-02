@@ -7,12 +7,19 @@ spring:
   cloud:
     gateway:
       routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/**
+          filters:
+            - RewritePath=/auth/(?<segment>.*), /api/auth/${segment}
+
         - id: doctor-service
           uri: lb://doctor-service
           predicates:
             - Path=/api/v1/doctors/**
           filters:
-            name: JwtFilter
+            - name: JwtFilter
 
 eureka:
   client:
