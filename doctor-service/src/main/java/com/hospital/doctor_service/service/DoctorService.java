@@ -9,7 +9,6 @@ public interface DoctorService {
     List<DoctorResponseDTO> getAllDoctors();
     DoctorResponseDTO getDoctorById(Long id);
     DoctorResponseDTO updateDoctor(Long id,DoctorRequestDTO doctorRequestDTO);
-    void deleteDoctor (Long id);
     List<DoctorResponseDTO> searchBySpecialization (String specialization);
 
 }

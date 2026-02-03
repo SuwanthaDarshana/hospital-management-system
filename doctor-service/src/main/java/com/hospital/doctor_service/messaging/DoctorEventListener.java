@@ -20,7 +20,7 @@ public class DoctorEventListener {
         System.out.println("📥 Received doctor from Auth Service: " + event.getEmail());
 
         Doctor doctor = Doctor.builder()
-                .authUserId(event.getUserId())   // <-- Link to Auth Service user
+                .authUserId(event.getAuthUserId())   // <-- Link to Auth Service user
                 .email(event.getEmail())
                 .firstName(event.getFirstName())
                 .lastName(event.getLastName())

@@ -34,6 +34,8 @@ public class Doctor {
     @Column(columnDefinition = "TEXT")
     private String availability;
 
+    private String role;
+
     @Column(nullable = false, unique = true)
     private Long authUserId;   // <-- Link to Auth Service User
 

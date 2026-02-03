@@ -41,14 +41,14 @@ public class AuthServiceImpl implements AuthService {
                 .email(registerRequestDTO.getEmail())
                 .password(passwordEncoder.encode(registerRequestDTO.getPassword()))
                 .role(Role.valueOf(registerRequestDTO.getRole()))
-                .username(registerRequestDTO.getRole().equals("DOCTOR") ? registerRequestDTO.getEmail() : registerRequestDTO.getUsername()) // only set username for non-doctors
+                //.username(registerRequestDTO.getRole().equals("DOCTOR") ? registerRequestDTO.getEmail() : registerRequestDTO.getUsername()) // only set username for non-doctors
                 .build();
 
         userRepository.save(user);
 
         if (user.getRole() == Role.DOCTOR) {
             DoctorCreatedEvent event = DoctorCreatedEvent.builder()
-                    .userId(user.getId())
+                    .authUserId(user.getId())
                     .email(user.getEmail())
                     .firstName(registerRequestDTO.getFirstName())
                     .lastName(registerRequestDTO.getLastName())
@@ -71,7 +71,7 @@ public class AuthServiceImpl implements AuthService {
                 .token(token)
                 .email(user.getEmail())
                 .role(user.getRole().name())
-                .username(user.getUsername())
+//                .username(user.getUsername())
                 .id(String.valueOf(user.getId())) // get id from user
                 .build();
     }
@@ -90,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
                 .token(token)
                 .email(user.getEmail())
                 .role(user.getRole().name())
-                .username(user.getUsername())
+//                .username(user.getUsername())
                 .id(String.valueOf(user.getId())) // get id from user
                 .build();
     }

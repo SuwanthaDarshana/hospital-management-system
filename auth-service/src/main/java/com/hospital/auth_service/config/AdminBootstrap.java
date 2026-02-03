@@ -21,7 +21,7 @@ public class AdminBootstrap implements CommandLineRunner {
         if (!userRepository.existsByRole(Role.ADMIN)) {
             User admin = new User();
             admin.setEmail("admin@hospital.com");
-            admin.setUsername("System Admin");
+//            admin.setUsername("System Admin");
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setRole(Role.ADMIN);
 

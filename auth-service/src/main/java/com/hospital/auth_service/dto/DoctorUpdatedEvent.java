@@ -7,11 +7,9 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class DoctorCreatedEvent {
+public class DoctorUpdatedEvent {
     private Long authUserId;
     private String email;
-    private String firstName;
-    private String lastName;
-    private String phone;
-    private String specialization;
+    private String password;
+    private String role;
 }

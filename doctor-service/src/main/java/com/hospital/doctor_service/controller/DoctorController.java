@@ -55,6 +55,8 @@ public class DoctorController {
         );
     }
 
+
+
     @GetMapping("/search")
     public ResponseEntity<StandardResponseDTO<List<DoctorResponseDTO>>> searchDoctors(@RequestParam String specialization){
         return ResponseEntity.ok(

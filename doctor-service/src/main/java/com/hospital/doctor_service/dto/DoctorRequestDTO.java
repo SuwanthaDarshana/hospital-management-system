@@ -8,11 +8,22 @@ import jakarta.validation.constraints.Email;
 public class DoctorRequestDTO {
 
 
+
+    // Admin can update these fields
+    private String firstName;
+    private String lastName;
+
+    @Email(message = "Invalid email format")
+    private String email;
+
+    
+    private String role;
+
+    // Both Admin and Doctor can update these
     private String phone;
-
     private String specialization;
-
     private String availability; // JSON string
+    private String password;
 
 
 }

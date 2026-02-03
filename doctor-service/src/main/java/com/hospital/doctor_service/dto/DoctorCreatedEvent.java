@@ -9,7 +9,7 @@ import lombok.*;
 @Builder
 public class DoctorCreatedEvent {
 
-    private Long userId;
+    private Long authUserId;
     private String email;
     private String firstName;
     private String lastName;
