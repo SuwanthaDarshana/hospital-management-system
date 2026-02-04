@@ -63,6 +63,10 @@ public class Patient {
     @Column(length = 3)
     private String bloodGroup;
 
+    @Column(nullable = false)
+    private boolean isActive;
+
+
     @CreatedDate
     @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;

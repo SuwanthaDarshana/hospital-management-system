@@ -20,6 +20,7 @@ public class PatientResponseDTO {
     String gender;
     LocalDate dateOfBirth;
     String bloodGroup;
+    boolean isActive;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 }
