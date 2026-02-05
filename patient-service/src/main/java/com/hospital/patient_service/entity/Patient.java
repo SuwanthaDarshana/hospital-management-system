@@ -24,6 +24,10 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false,unique = true)
+    private Long authUserId;
+
+
     @NotBlank(message = "First name is required")
     @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
     @Column(nullable = false, length = 50)
@@ -42,7 +46,7 @@ public class Patient {
     @NotBlank(message = "Phone number is required")
     @Pattern(regexp = "^\\+?[0-9]{10}$", message = "Phone number must be valid (10)")
     @Column(nullable = false, length = 15)
-    private String phoneNumber;
+    private String phone;
 
     @NotBlank(message = "Address is required")
     @Size(max = 255, message = "Address is too long")
@@ -66,6 +70,7 @@ public class Patient {
     @Column(nullable = false)
     private boolean isActive;
 
+    private String role;
 
     @CreatedDate
     @Column(updatable = false, nullable = false)

@@ -19,7 +19,6 @@ public class SecurityConfig {
                 // Gateway එකෙන් එන Role එක පරීක්ෂා කරන Filter එක මෙහිදී එකතු කරයි
                 .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // Role-based Access Control (RBAC)
                         .requestMatchers(HttpMethod.POST, "/api/v1/doctors/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/doctors/**").hasAnyRole("ADMIN", "DOCTOR")

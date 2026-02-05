@@ -21,6 +21,13 @@ spring:
           filters:
             - name: JwtFilter
 
+        - id: patient-service
+          uri: lb://patient-service
+          predicates:
+            - Path=/api/v1/patients/**
+          filters:
+            - name: JwtFilter
+
 eureka:
   client:
     service-url:

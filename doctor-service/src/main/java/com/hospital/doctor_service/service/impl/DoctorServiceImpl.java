@@ -124,8 +124,8 @@ public class DoctorServiceImpl implements DoctorService {
         // ================= Send to Auth Service =================
         if (sendToAuth) {
             rabbitTemplate.convertAndSend(
-                    RabbitConfig.AUTH_EXCHANGE,
-                    RabbitConfig.AUTH_ROUTING_KEY,
+                    RabbitConfig.DOCTOR_UPDATE_EXCHANGE,
+                    RabbitConfig.DOCTOR_UPDATE_ROUTING_KEY,
                     event
             );
             System.out.println("📤 DoctorUpdatedEvent sent to Auth Service");

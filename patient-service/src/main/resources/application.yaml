@@ -6,7 +6,7 @@ spring:
     name: patient-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/hms_patient?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+    url: jdbc:postgresql://localhost:5432/hms_patient
     username: postgres
     password: Suwa99@#
     driver-class-name: org.postgresql.Driver

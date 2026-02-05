@@ -17,9 +17,9 @@ public class RabbitConfig {
 
     // ================= DOCTOR → AUTH =================
     // Doctor profile update → Auth update
-    public static final String AUTH_QUEUE = "auth.queue";
-    public static final String AUTH_EXCHANGE = "auth.exchange";
-    public static final String AUTH_ROUTING_KEY = "auth.doctor.updated";
+    public static final String DOCTOR_UPDATE_QUEUE = "doctor.update.queue";
+    public static final String DOCTOR_UPDATE_EXCHANGE = "doctor.update.exchange";
+    public static final String DOCTOR_UPDATE_ROUTING_KEY = "doctor.updated";
 
     // ---------- Doctor Queue (Auth → Doctor) ----------
     @Bean
@@ -43,12 +43,12 @@ public class RabbitConfig {
     // ---------- Auth Queue (Doctor → Auth) ----------
     @Bean
     public Queue authQueue() {
-        return new Queue(AUTH_QUEUE, true);
+        return new Queue(DOCTOR_UPDATE_QUEUE, true);
     }
 
     @Bean
     public TopicExchange authExchange() {
-        return new TopicExchange(AUTH_EXCHANGE);
+        return new TopicExchange(DOCTOR_UPDATE_EXCHANGE);
     }
 
     @Bean
@@ -56,7 +56,7 @@ public class RabbitConfig {
         return BindingBuilder
                 .bind(authQueue())
                 .to(authExchange())
-                .with(AUTH_ROUTING_KEY);
+                .with(DOCTOR_UPDATE_ROUTING_KEY);
     }
 
     // JSON serialization

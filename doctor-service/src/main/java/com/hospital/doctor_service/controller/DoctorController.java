@@ -5,7 +5,6 @@ import com.hospital.doctor_service.dto.DoctorResponseDTO;
 import com.hospital.doctor_service.dto.StandardResponseDTO;
 import com.hospital.doctor_service.service.DoctorService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +21,6 @@ public class DoctorController {
 
     @GetMapping
     public ResponseEntity<StandardResponseDTO<List<DoctorResponseDTO>>> getAllDoctors() {
-//        List<DoctorResponseDTO> doctors = doctorService.getAllDoctors();
         return ResponseEntity.ok(
                 StandardResponseDTO.<List<DoctorResponseDTO>>builder()
                         .success(true)

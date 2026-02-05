@@ -7,10 +7,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AuthResponseDTO {
-    private String token;
+public class PatientUpdatedEvent {
+    private Long authUserId;
     private String email;
-    private String role;
-    private String id;
-
+    private String password;
 }

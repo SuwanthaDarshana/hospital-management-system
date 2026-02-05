@@ -1,10 +1,7 @@
 package com.hospital.auth_service.service.impl;
 
 import com.hospital.auth_service.config.RabbitConfig;
-import com.hospital.auth_service.dto.AuthResponseDTO;
-import com.hospital.auth_service.dto.DoctorCreatedEvent;
-import com.hospital.auth_service.dto.LoginRequestDTO;
-import com.hospital.auth_service.dto.RegisterRequestDTO;
+import com.hospital.auth_service.dto.*;
 import com.hospital.auth_service.entity.Role;
 import com.hospital.auth_service.entity.User;
 import com.hospital.auth_service.repository.UserRepository;
@@ -62,6 +59,27 @@ public class AuthServiceImpl implements AuthService {
                     event
             );
             System.out.println("✅ RabbitMQ: Doctor registration event sent for " + user.getEmail());
+        }else if (user.getRole() == Role.PATIENT) {
+            // Send to Patient Service
+            PatientCreatedEvent event = PatientCreatedEvent.builder()
+                    .authUserId(user.getId())
+                    .email(user.getEmail())
+                    .firstName(registerRequestDTO.getFirstName())
+                    .lastName(registerRequestDTO.getLastName())
+                    .phone(registerRequestDTO.getPhone())
+                    .address(registerRequestDTO.getAddress())
+                    .gender(registerRequestDTO.getGender())
+                    .dateOfBirth(registerRequestDTO.getDateOfBirth())
+                    .bloodGroup(registerRequestDTO.getBloodGroup())
+                    .isActive(true)
+                    .build();
+
+            rabbitTemplate.convertAndSend(
+                    RabbitConfig.PATIENT_EXCHANGE,
+                    RabbitConfig.PATIENT_ROUTING_KEY,
+                    event
+            );
+            System.out.println("✅ RabbitMQ: Patient registration event sent for " + user.getEmail());
         }
 
 
@@ -90,7 +108,6 @@ public class AuthServiceImpl implements AuthService {
                 .token(token)
                 .email(user.getEmail())
                 .role(user.getRole().name())
-//                .username(user.getUsername())
                 .id(String.valueOf(user.getId())) // get id from user
                 .build();
     }
