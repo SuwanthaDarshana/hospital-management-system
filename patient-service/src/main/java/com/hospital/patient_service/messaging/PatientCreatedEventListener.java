@@ -30,6 +30,7 @@ public class PatientCreatedEventListener {
                 .dateOfBirth(event.getDateOfBirth())
                 .bloodGroup(event.getBloodGroup())
                 .isActive(event.isActive())
+                .role("PATIENT")
                 .build();
         patientRepository.save(patient);
         System.out.println("✅ Patient Service: Profile created automatically for " + event.getEmail());

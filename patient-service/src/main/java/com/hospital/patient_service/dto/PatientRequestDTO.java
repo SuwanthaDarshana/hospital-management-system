@@ -46,6 +46,7 @@ public class PatientRequestDTO {
 
     @Pattern(regexp = "^(A|B|AB|O)[+-]$", message = "Invalid blood group format (e.g., A+, O-)")
     private String bloodGroup;
+    
 
     private boolean isActive;
 

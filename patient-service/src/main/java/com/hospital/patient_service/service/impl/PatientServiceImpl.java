@@ -37,7 +37,7 @@ public class PatientServiceImpl implements PatientService {
             throw new RuntimeException("Email already registered with another patient");
         }
 
-        if (patientRepository.existsByPhoneNumber(patientRequestDTO.getPhone())) {
+        if (patientRepository.existsByPhone(patientRequestDTO.getPhone())) {
             throw new RuntimeException("Phone number already registered with another patient");
         }
 
