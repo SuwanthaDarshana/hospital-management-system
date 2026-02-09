@@ -33,6 +33,4 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka
 
-      #jwt filter
-      #jwt:
-        #secret: HOSPITAL_SECRET_KEY_HOSPITAL_SECRET_KEY
+

@@ -33,7 +33,7 @@ public class PatientCreatedEventListener {
                 .role("PATIENT")
                 .build();
         patientRepository.save(patient);
-        System.out.println("✅ Patient Service: Profile created automatically for " + event.getEmail());
+        System.out.println("Patient Service: Profile created automatically for " + event.getEmail());
 
     }
 }

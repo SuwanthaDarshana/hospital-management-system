@@ -31,7 +31,7 @@ public class PatientServiceImpl implements PatientService {
 
 
     @Override
-    @Transactional
+    @Transactional //JPA will handle the transaction rollback if any exception occurs
     public PatientResponseDTO createPatient(PatientRequestDTO patientRequestDTO) {
         if (patientRepository.existsByEmail(patientRequestDTO.getEmail())) {
             throw new RuntimeException("Email already registered with another patient");
@@ -161,7 +161,7 @@ public class PatientServiceImpl implements PatientService {
                     RabbitConfig.PATIENT_UPDATE_ROUTING_KEY,
                     event
             );
-            System.out.println("✅ Sync Message sent to Auth Service for: " + updatedPatient.getEmail());
+            System.out.println("Sync Message sent to Auth Service for: " + updatedPatient.getEmail());
         }
 
         return mapToPatientResponseDTO(updatedPatient);

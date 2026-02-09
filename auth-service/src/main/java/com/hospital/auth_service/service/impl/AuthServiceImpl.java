@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
+    @Transactional
     public AuthResponseDTO register(RegisterRequestDTO registerRequestDTO) {
 
         if (userRepository.findByEmail(registerRequestDTO.getEmail()).isPresent())

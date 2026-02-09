@@ -71,4 +71,3 @@ public class JwtFilter extends AbstractGatewayFilterFactory<JwtFilter.Config> {
     public static class Config {}
 }
 
-///whats up
