@@ -32,6 +32,6 @@ public class DoctorEventListener {
                 .build();
 
         doctorRepository.save(doctor);
-        System.out.println("✅ Doctor saved in Doctor Service DB");
+        System.out.println(" Doctor saved in Doctor Service DB");
     }
 }

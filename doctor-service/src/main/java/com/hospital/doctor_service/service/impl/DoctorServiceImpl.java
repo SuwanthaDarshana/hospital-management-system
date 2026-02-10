@@ -128,7 +128,7 @@ public class DoctorServiceImpl implements DoctorService {
                     RabbitConfig.DOCTOR_UPDATE_ROUTING_KEY,
                     event
             );
-            System.out.println("📤 DoctorUpdatedEvent sent to Auth Service");
+            System.out.println("DoctorUpdatedEvent sent to Auth Service");
         }
 
         return mapToResponse(doctor);

@@ -1,6 +1,6 @@
 package com.hospital.doctor_service.config;
 
-import com.hospital.doctor_service.security.JwtAuthenticationFilter;
+import com.hospital.doctor_service.security.GatewayHeaderAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,27 +14,18 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-
-                // Gateway එකෙන් එන Role එක පරීක්ෂා කරන Filter එක මෙහිදී එකතු කරයි
-                .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+        http
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(new GatewayHeaderAuthFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        // Role-based Access Control (RBAC)
                         .requestMatchers(HttpMethod.POST, "/api/v1/doctors/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/doctors/**").hasAnyRole("ADMIN", "DOCTOR")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/doctors/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/doctors/**").hasAnyRole("ADMIN", "STAFF", "DOCTOR","PATIENT")
-
-                        //අනෙක් සියලුම ඉල්ලීම් වලට අවසර අවශ්‍යයි
+                        .requestMatchers(HttpMethod.GET, "/api/v1/doctors/**").hasAnyRole("ADMIN", "STAFF", "DOCTOR", "PATIENT")
                         .anyRequest().authenticated()
-                )
-
-
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-        // JWT Filter will be added here in next steps
+                );
 
         return http.build();
     }
-
 }
