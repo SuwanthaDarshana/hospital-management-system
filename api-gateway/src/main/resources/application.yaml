@@ -28,11 +28,12 @@ spring:
           filters:
             - name: JwtFilter
 
+jwt:
+  secret: ${JWT_SECRET}
+
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
 
-
-#jwt filter
 

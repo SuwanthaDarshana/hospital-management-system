@@ -3,6 +3,7 @@ package com.hospital.api_gateway.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
@@ -14,11 +15,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtFilter extends AbstractGatewayFilterFactory<JwtFilter.Config> {
 
-    // Ideally, load this from application.yml using @Value
-    private final String SECRET = "HOSPITAL_SECRET_KEY_HOSPITAL_SECRET_KEY";
 
-    public JwtFilter() {
+    private final String secret;
+
+    public JwtFilter(@Value("${jwt.secret}") String secret) {
         super(Config.class);
+        this.secret = secret;
     }
 
     @Override
@@ -42,7 +44,7 @@ public class JwtFilter extends AbstractGatewayFilterFactory<JwtFilter.Config> {
             // 3. Validate Token & Extract Claims
             try {
                 Claims claims = Jwts.parserBuilder()
-                        .setSigningKey(SECRET.getBytes())
+                        .setSigningKey(secret.getBytes())
                         .build()
                         .parseClaimsJws(token)
                         .getBody();
