@@ -1,8 +1,6 @@
 package com.hospital.auth_service.messagin;
 
-import com.hospital.auth_service.dto.DoctorUpdatedEvent;
 import com.hospital.auth_service.dto.PatientUpdatedEvent;
-import com.hospital.auth_service.entity.Role;
 import com.hospital.auth_service.entity.User;
 import com.hospital.auth_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
