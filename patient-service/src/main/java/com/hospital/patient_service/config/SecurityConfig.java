@@ -19,8 +19,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(new GatewayHeaderAuthFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/v1/patients/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/patients/**").hasAnyRole("ADMIN", "PATIENT")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/patients/**").hasRole("STAFF")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/patients/**").hasAnyRole("STAFF", "PATIENT")
                         .requestMatchers(HttpMethod.GET, "/api/v1/patients/**").hasAnyRole("ADMIN", "DOCTOR", "STAFF", "PATIENT")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/patients/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

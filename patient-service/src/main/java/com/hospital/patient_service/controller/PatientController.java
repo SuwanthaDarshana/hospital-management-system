@@ -65,13 +65,13 @@ public class PatientController {
                 .build());
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{authUserId}")
     public ResponseEntity<StandardResponseDTO<PatientResponseDTO>> updatePatient(
-            @PathVariable Long id, @Valid @RequestBody PatientRequestDTO patientRequestDTO) {
+            @PathVariable Long authUserId, @Valid @RequestBody PatientRequestDTO patientRequestDTO) {
         return ResponseEntity.ok(StandardResponseDTO.<PatientResponseDTO>builder()
                 .success(true)
                 .message("Patient updated successfully")
-                .data(patientService.updatePatient(id, patientRequestDTO))
+                .data(patientService.updatePatient(authUserId, patientRequestDTO))
                 .build());
     }
 

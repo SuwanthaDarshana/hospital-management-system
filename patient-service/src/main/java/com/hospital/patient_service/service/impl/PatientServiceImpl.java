@@ -112,10 +112,10 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     @Transactional
-    public PatientResponseDTO updatePatient(Long id, PatientRequestDTO requestDTO) {
+    public PatientResponseDTO updatePatient(Long authUserId, PatientRequestDTO requestDTO) {
         // 1. Fetch existing record
-        Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + id));
+        Patient patient = patientRepository.findByAuthUserId(authUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + authUserId));
 
         // 2. SECURITY CHECK: "Is this MY profile?"
         // We get the email of the person currently logged in from the JWT

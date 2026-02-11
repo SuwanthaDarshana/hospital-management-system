@@ -15,4 +15,6 @@ public interface PatientRepository extends JpaRepository<Patient,Long>, JpaSpeci
 
     Optional<Patient> findByEmail(String email);
     boolean existsByEmail(String email);
+
+    Optional<Patient> findByAuthUserId(Long authUserId);
 }
