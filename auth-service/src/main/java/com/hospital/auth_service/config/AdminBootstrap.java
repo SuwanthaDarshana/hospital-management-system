@@ -27,7 +27,7 @@ public class AdminBootstrap implements CommandLineRunner {
 
             userRepository.save(admin);
 
-            System.out.println("🔥 Default ADMIN created");
+            System.out.println("Default ADMIN created");
             System.out.println("Email: admin@hospital.com");
             System.out.println("Password: admin123");
         }

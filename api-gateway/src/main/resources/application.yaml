@@ -7,7 +7,15 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: auth-service
+        # Check token for doctor register
+        - id: auth-register-doctor
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/register/doctor
+          filters:
+            - name: JwtFilter
+          
+        - id: auth-service-public
           uri: lb://auth-service
           predicates:
             - Path=/api/auth/**

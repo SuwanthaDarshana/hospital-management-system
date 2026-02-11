@@ -60,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
                     RabbitConfig.DOCTOR_ROUTING_KEY,
                     event
             );
-            System.out.println("✅ RabbitMQ: Doctor registration event sent for " + user.getEmail());
+            System.out.println(" RabbitMQ: Doctor registration event sent for " + user.getEmail());
         }else if (user.getRole() == Role.PATIENT) {
             // Send to Patient Service
             PatientCreatedEvent event = PatientCreatedEvent.builder()
@@ -81,7 +81,7 @@ public class AuthServiceImpl implements AuthService {
                     RabbitConfig.PATIENT_ROUTING_KEY,
                     event
             );
-            System.out.println("✅ RabbitMQ: Patient registration event sent for " + user.getEmail());
+            System.out.println("RabbitMQ: Patient registration event sent for " + user.getEmail());
         }
 
 
