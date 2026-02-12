@@ -14,4 +14,5 @@ public class DoctorCreatedEvent {
     private String lastName;
     private String phone;
     private String specialization;
+    private String role;
 }

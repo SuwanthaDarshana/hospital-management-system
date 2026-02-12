@@ -19,10 +19,14 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(new GatewayHeaderAuthFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/v1/patients/**").hasRole("STAFF")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/patients/**").hasAnyRole("STAFF", "PATIENT")
+
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/patients/**").hasAnyRole("STAFF", "PATIENT", "ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/v1/patients/dynamic-search").hasAnyRole("ADMIN", "DOCTOR", "STAFF")
+
                         .requestMatchers(HttpMethod.GET, "/api/v1/patients/**").hasAnyRole("ADMIN", "DOCTOR", "STAFF", "PATIENT")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/patients/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/patients/**").hasAnyRole("ADMIN", "STAFF")
                         .anyRequest().authenticated()
                 );
 

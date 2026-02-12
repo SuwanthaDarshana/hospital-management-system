@@ -7,6 +7,7 @@ import lombok.*;
 @Builder
 public class DoctorResponseDTO {
     private Long id;
+    private Long authUserId;
     private String firstName;
     private String lastName;
     private String email;

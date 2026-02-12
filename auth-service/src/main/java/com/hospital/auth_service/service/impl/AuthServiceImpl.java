@@ -53,6 +53,7 @@ public class AuthServiceImpl implements AuthService {
                     .lastName(registerRequestDTO.getLastName())
                     .phone(registerRequestDTO.getPhone())
                     .specialization(registerRequestDTO.getSpecialization())
+                    .role(registerRequestDTO.getRole())
                     .build();
 
             rabbitTemplate.convertAndSend(

@@ -26,6 +26,7 @@ public class DoctorEventListener {
                 .lastName(event.getLastName())
                 .phone(event.getPhone())
                 .specialization(event.getSpecialization())
+                .role(event.getRole())
                 .availability("NOT_SET")
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())

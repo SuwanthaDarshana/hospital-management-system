@@ -6,8 +6,8 @@ import com.hospital.patient_service.dto.PatientResponseDTO;
 import java.util.List;
 
 public interface PatientService {
-    PatientResponseDTO createPatient(PatientRequestDTO patientRequestDTO);
-    PatientResponseDTO getPatientById(Long id);
+
+    PatientResponseDTO getPatientByAuthUserId(Long authUserId);
     List<PatientResponseDTO> getAllPatients();
     PatientResponseDTO updatePatient(Long authUserId, PatientRequestDTO patientRequestDTO);
     void deletePatient(Long id);

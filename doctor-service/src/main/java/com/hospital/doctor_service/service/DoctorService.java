@@ -7,8 +7,9 @@ import java.util.List;
 
 public interface DoctorService {
     List<DoctorResponseDTO> getAllDoctors();
-    DoctorResponseDTO getDoctorById(Long id);
-    DoctorResponseDTO updateDoctor(Long id,DoctorRequestDTO doctorRequestDTO);
+    DoctorResponseDTO getDoctorByAuthUserId(Long authUserId);
+    DoctorResponseDTO updateDoctor(Long authUserId,DoctorRequestDTO doctorRequestDTO);
     List<DoctorResponseDTO> searchBySpecialization (String specialization);
+
 
 }

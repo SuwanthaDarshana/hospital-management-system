@@ -29,38 +29,11 @@ public class PatientServiceImpl implements PatientService {
 
 
 
-
     @Override
-    @Transactional //JPA will handle the transaction rollback if any exception occurs
-    public PatientResponseDTO createPatient(PatientRequestDTO patientRequestDTO) {
-        if (patientRepository.existsByEmail(patientRequestDTO.getEmail())) {
-            throw new RuntimeException("Email already registered with another patient");
-        }
-
-        if (patientRepository.existsByPhone(patientRequestDTO.getPhone())) {
-            throw new RuntimeException("Phone number already registered with another patient");
-        }
-
-        Patient patient = Patient.builder()
-                .firstName(patientRequestDTO.getFirstName())
-                .lastName(patientRequestDTO.getLastName())
-                .email(patientRequestDTO.getEmail())
-                .phone(patientRequestDTO.getPhone())
-                .address(patientRequestDTO.getAddress())
-                .gender(patientRequestDTO.getGender())
-                .dateOfBirth(patientRequestDTO.getDateOfBirth())
-                .bloodGroup(patientRequestDTO.getBloodGroup())
-                .isActive(true)
-                .build();
-
-        return mapToPatientResponseDTO(patientRepository.save(patient));
-    }
-
-    @Override
-    public PatientResponseDTO getPatientById(Long id) {
-        return patientRepository.findById(id)
+    public PatientResponseDTO getPatientByAuthUserId(Long authUserId) {
+        return patientRepository.findByAuthUserId(authUserId)
                 .map(this::mapToPatientResponseDTO)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + authUserId));
     }
 
     @Override
@@ -181,6 +154,7 @@ public class PatientServiceImpl implements PatientService {
     private PatientResponseDTO mapToPatientResponseDTO(Patient patient){
         return PatientResponseDTO.builder()
                 .id(patient.getId())
+                .authUserId(patient.getAuthUserId())
                 .firstName(patient.getFirstName())
                 .lastName(patient.getLastName())
                 .email(patient.getEmail())

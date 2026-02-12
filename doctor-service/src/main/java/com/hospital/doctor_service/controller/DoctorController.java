@@ -31,24 +31,24 @@ public class DoctorController {
 
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<StandardResponseDTO<DoctorResponseDTO>> getDoctorById(@PathVariable Long id) {
+    @GetMapping("/{authUserId}")
+    public ResponseEntity<StandardResponseDTO<DoctorResponseDTO>> getDoctorByAuthUserId(@PathVariable Long authUserId) {
         return ResponseEntity.ok(
                 StandardResponseDTO.<DoctorResponseDTO>builder()
                         .success(true)
                         .message("Doctor fetched successfully")
-                        .data(doctorService.getDoctorById(id))
+                        .data(doctorService.getDoctorByAuthUserId(authUserId))
                         .build()
         );
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<StandardResponseDTO<DoctorResponseDTO>> updateDoctor(@PathVariable Long id, @Validated @RequestBody DoctorRequestDTO doctorRequestDTO) {
+    @PutMapping("/{authUserId}")
+    public ResponseEntity<StandardResponseDTO<DoctorResponseDTO>> updateDoctor(@PathVariable Long authUserId, @Validated @RequestBody DoctorRequestDTO doctorRequestDTO) {
         return ResponseEntity.ok(
                 StandardResponseDTO.<DoctorResponseDTO>builder()
                 .success(true)
                 .message("Doctor updated successfully")
-                .data(doctorService.updateDoctor(id, doctorRequestDTO))
+                .data(doctorService.updateDoctor(authUserId, doctorRequestDTO))
                 .build()
         );
     }

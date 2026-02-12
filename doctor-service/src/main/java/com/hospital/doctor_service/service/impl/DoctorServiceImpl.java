@@ -37,8 +37,8 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
-    public DoctorResponseDTO getDoctorById(Long id) {
-        Doctor doctor = doctorRepository.findById(id)
+    public DoctorResponseDTO getDoctorByAuthUserId(Long authUserId) {
+        Doctor doctor = doctorRepository.findByAuthUserId(authUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
         return mapToResponse(doctor);
     }
@@ -46,33 +46,31 @@ public class DoctorServiceImpl implements DoctorService {
     // ========================= UPDATE =========================
 
     @Override
-    public DoctorResponseDTO updateDoctor(Long id, DoctorRequestDTO dto) {
-
-        Doctor doctor = doctorRepository.findById(id)
+    public DoctorResponseDTO updateDoctor(Long authUserId, DoctorRequestDTO dto) {
+        Doctor doctor = doctorRepository.findByAuthUserId(authUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
 
+        // 1. Get Security Context Data
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = auth.getName(); // Extracted from JWT by Gateway
         String role = getCurrentUserRole();
 
-        // Build PATCH-style event for Auth Service
+        // 2. OWNERSHIP CHECK: Doctors can only update their own profile
+        if ("DOCTOR".equals(role)) {
+            if (!doctor.getEmail().equalsIgnoreCase(currentUserEmail)) {
+                throw new RuntimeException("Access Denied: You can only update your own profile.");
+            }
+        }
+
+        // 3. Build Update Event
         DoctorUpdatedEvent event = DoctorUpdatedEvent.builder()
                 .authUserId(doctor.getAuthUserId())
-                .firstName(dto.getFirstName())
-                .lastName(dto.getLastName())
-                .email(dto.getEmail())
-                .phone(dto.getPhone())
-                .specialization(dto.getSpecialization())
-                .availability(dto.getAvailability())
-                .role(dto.getRole())
-                .password(dto.getPassword())
                 .build();
-
 
         boolean sendToAuth = false;
 
-        // ========== ADMIN ==========
+        // ========== ADMIN LOGIC ==========
         if ("ADMIN".equals(role)) {
-
-            // Admin can update all fields (if provided)
             if (dto.getFirstName() != null) doctor.setFirstName(dto.getFirstName());
             if (dto.getLastName() != null) doctor.setLastName(dto.getLastName());
             if (dto.getEmail() != null) doctor.setEmail(dto.getEmail());
@@ -81,24 +79,14 @@ public class DoctorServiceImpl implements DoctorService {
             if (dto.getAvailability() != null) doctor.setAvailability(dto.getAvailability());
             if (dto.getRole() != null) doctor.setRole(dto.getRole());
 
-
             event.setFirstName(dto.getFirstName());
             event.setLastName(dto.getLastName());
             event.setEmail(dto.getEmail());
-            event.setRole(dto.getRole());
             event.setPassword(dto.getPassword());
-            event.setPhone(dto.getPhone());
-            event.setSpecialization(dto.getSpecialization());
-            event.setAvailability(dto.getAvailability());
-            event.setRole(dto.getRole());
-
             sendToAuth = true;
         }
-
-        // ========== DOCTOR ==========
+        // ========== DOCTOR LOGIC ==========
         else if ("DOCTOR".equals(role)) {
-
-            // Doctor can update only limited fields
             if (dto.getPhone() != null) doctor.setPhone(dto.getPhone());
             if (dto.getSpecialization() != null) doctor.setSpecialization(dto.getSpecialization());
             if (dto.getAvailability() != null) doctor.setAvailability(dto.getAvailability());
@@ -109,41 +97,33 @@ public class DoctorServiceImpl implements DoctorService {
 
             if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
                 event.setPassword(dto.getPassword());
+                sendToAuth = true;
             }
-
-            sendToAuth = dto.getPassword() != null || dto.getPhone() != null || dto.getSpecialization() != null || dto.getAvailability() != null;
-        }
-
-        else {
-            throw new RuntimeException("Unauthorized role: " + role);
+            // Sync phone/specialization if needed in Auth DB
+            if (dto.getPhone() != null) sendToAuth = true;
         }
 
         doctor.setUpdatedAt(LocalDateTime.now());
         doctorRepository.save(doctor);
 
-        // ================= Send to Auth Service =================
         if (sendToAuth) {
             rabbitTemplate.convertAndSend(
                     RabbitConfig.DOCTOR_UPDATE_EXCHANGE,
                     RabbitConfig.DOCTOR_UPDATE_ROUTING_KEY,
                     event
             );
-            System.out.println("DoctorUpdatedEvent sent to Auth Service");
         }
 
         return mapToResponse(doctor);
     }
 
-    // ========================= SECURITY =========================
-
     private String getCurrentUserRole() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
         return auth.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .findFirst()
-                .orElseThrow()
+                .orElse("ROLE_ANONYMOUS")
                 .replace("ROLE_", "");
     }
 
@@ -162,6 +142,7 @@ public class DoctorServiceImpl implements DoctorService {
     private DoctorResponseDTO mapToResponse(Doctor doctor) {
         return DoctorResponseDTO.builder()
                 .id(doctor.getId())
+                .authUserId(doctor.getAuthUserId())
                 .firstName(doctor.getFirstName())
                 .lastName(doctor.getLastName())
                 .email(doctor.getEmail())

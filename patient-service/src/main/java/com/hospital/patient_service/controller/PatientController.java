@@ -19,23 +19,12 @@ public class PatientController {
 
     private final PatientService patientService;
 
-    @PostMapping
-    public ResponseEntity<StandardResponseDTO<PatientResponseDTO>> createPatient(@RequestBody PatientRequestDTO patientRequestDTO){
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(StandardResponseDTO.<PatientResponseDTO>builder()
-                        .success(true)
-                        .message("Patient created successfully")
-                        .data(patientService.createPatient(patientRequestDTO))
-                        .build());
-
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<StandardResponseDTO<PatientResponseDTO>> getPatientById(@PathVariable Long id){
+    @GetMapping("/{authUserId}")
+    public ResponseEntity<StandardResponseDTO<PatientResponseDTO>> getPatientByAuthUserId(@PathVariable Long authUserId){
         return ResponseEntity.ok(StandardResponseDTO.<PatientResponseDTO>builder()
                 .success(true)
                 .message("Patient fetched successfully")
-                .data(patientService.getPatientById(id))
+                .data(patientService.getPatientByAuthUserId(authUserId))
                 .build());
     }
 
