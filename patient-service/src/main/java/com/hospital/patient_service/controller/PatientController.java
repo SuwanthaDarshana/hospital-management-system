@@ -74,3 +74,5 @@ public class PatientController {
     }
 
 }
+
+//TODO: Add delete patient by authUserId
