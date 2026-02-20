@@ -1,11 +1,11 @@
 package com.hospital.auth_service.service;
 
-import com.hospital.auth_service.dto.AuthResponseDTO;
-import com.hospital.auth_service.dto.LoginRequestDTO;
-import com.hospital.auth_service.dto.RegisterRequestDTO;
+import com.hospital.auth_service.dto.*;
 
 public interface AuthService {
-    AuthResponseDTO register(RegisterRequestDTO registerRequestDTO);
-    AuthResponseDTO login(LoginRequestDTO loginRequestDTO);
+    AuthResponseDTO registerDoctor(DoctorRegisterRequestDTO dto);
 
+    AuthResponseDTO registerPatient(PatientRegisterRequestDTO dto);
+
+    AuthResponseDTO login(LoginRequestDTO loginRequestDTO);
 }

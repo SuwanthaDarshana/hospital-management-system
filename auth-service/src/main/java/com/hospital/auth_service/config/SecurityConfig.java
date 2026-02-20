@@ -21,9 +21,16 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .addFilterBefore(new GatewayHeaderAuthFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/api/auth/register/patient").permitAll() // Public registration
-                        .requestMatchers("/api/auth/register/doctor").hasRole("ADMIN") // Only Admin
+                        .requestMatchers("/api/v1/auth/login").permitAll()
+                        .requestMatchers("/api/v1/auth/register/patient").permitAll() // Public registration
+                        .requestMatchers("/api/v1/auth/register/doctor").hasRole("ADMIN") // Only Admin
+                        // Swagger / OpenAPI endpoints
+                        .requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs",
+                                "/v3/api-docs/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

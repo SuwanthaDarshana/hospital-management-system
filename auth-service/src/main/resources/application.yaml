@@ -40,3 +40,11 @@ eureka:
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
