@@ -1,13 +1,15 @@
-package com.hospital.auth_service.messagin;
+package com.hospital.auth_service.messaging;
 
 import com.hospital.auth_service.dto.PatientUpdatedEvent;
 import com.hospital.auth_service.entity.User;
 import com.hospital.auth_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PatientUpdateListener {
@@ -18,23 +20,27 @@ public class PatientUpdateListener {
     @RabbitListener(queues = "patient.update.queue")
     public void handlePatientUpdated(PatientUpdatedEvent event) {
 
-        System.out.println("Received Update for User ID: " + event.getAuthUserId());
+        log.info("Received Update for User ID: {}", event.getAuthUserId());
 
         User user = userRepository.findById(event.getAuthUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> {
+                    log.error("User not found with ID: {}", event.getAuthUserId());
+                    return new RuntimeException("User not found");
+                });
 
         // 1. Update Email if changed
         if (event.getEmail() != null && !event.getEmail().isEmpty()) {
+            log.debug("Updating email for user ID: {} to: {}", event.getAuthUserId(), event.getEmail());
             user.setEmail(event.getEmail());
         }
 
         // 2. Update Password ONLY if a new one is provided
         if (event.getPassword() != null && !event.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(event.getPassword()));
-            System.out.println("Password updated for user: " + user.getEmail());
+            log.info("Password updated for user: {}", user.getEmail());
         }
 
         userRepository.save(user);
-        System.out.println("✅ Auth Service updated user " + user.getEmail());
+        log.info("Auth Service updated user: {}", user.getEmail());
     }
 }
