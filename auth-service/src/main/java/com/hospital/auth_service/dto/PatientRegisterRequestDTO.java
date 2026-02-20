@@ -18,7 +18,7 @@ public class PatientRegisterRequestDTO {
 
     @Schema(description = "Patient's email address", example = "jane.doe@gmail.com")
     @Email
-    @NotBlank
+    @NotBlank()
     private String email;
 
     @Schema(description = "Patient's first name", example = "Jane")

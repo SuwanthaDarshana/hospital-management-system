@@ -14,11 +14,11 @@ import lombok.*;
 public class LoginRequestDTO {
 
     @Schema(description = "Registered email address", example = "admin@hospital.com")
-    @Email
-    @NotBlank
+    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email is required")
     private String email;
 
     @Schema(description = "Account password", example = "admin123")
-    @NotBlank
+    @NotBlank(message = "Password is required")
     private String password;
 }
