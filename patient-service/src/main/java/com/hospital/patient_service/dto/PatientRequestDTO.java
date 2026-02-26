@@ -49,8 +49,7 @@ public class PatientRequestDTO {
     
 
     private boolean isActive;
-
-//    #hello
+    
 
 
 }
