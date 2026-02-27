@@ -40,6 +40,7 @@ eureka:
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7 days in ms (default)
 
 springdoc:
   api-docs:

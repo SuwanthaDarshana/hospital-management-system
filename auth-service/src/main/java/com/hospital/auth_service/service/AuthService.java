@@ -8,4 +8,8 @@ public interface AuthService {
     AuthResponseDTO registerPatient(PatientRegisterRequestDTO dto);
 
     AuthResponseDTO login(LoginRequestDTO loginRequestDTO);
+
+    AuthResponseDTO refreshToken(RefreshTokenRequestDTO dto);
+
+    void logout(RefreshTokenRequestDTO dto);
 }

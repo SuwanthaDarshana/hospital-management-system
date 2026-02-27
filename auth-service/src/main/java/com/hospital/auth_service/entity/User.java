@@ -27,5 +27,6 @@ public class User {
     @NotNull
     private Role role;
 
+    @Builder.Default
     private boolean enabled = true;
 }

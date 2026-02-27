@@ -19,11 +19,12 @@ public class AdminBootstrap implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         if (!userRepository.existsByRole(Role.ADMIN)) {
-            User admin = new User();
-            admin.setEmail("admin@hospital.com");
-//            admin.setUsername("System Admin");
-            admin.setPassword(passwordEncoder.encode("admin123"));
-            admin.setRole(Role.ADMIN);
+            User admin = User.builder()
+                    .email("admin@hospital.com")
+                    .password(passwordEncoder.encode("admin123"))
+                    .role(Role.ADMIN)
+                    .enabled(true)
+                    .build();
 
             userRepository.save(admin);
 

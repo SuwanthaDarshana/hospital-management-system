@@ -22,8 +22,10 @@ public class SecurityConfig {
                 .addFilterBefore(new GatewayHeaderAuthFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/login").permitAll()
-                        .requestMatchers("/api/v1/auth/register/patient").permitAll() // Public registration
-                        .requestMatchers("/api/v1/auth/register/doctor").hasRole("ADMIN") // Only Admin
+                        .requestMatchers("/api/v1/auth/refresh").permitAll()
+                        .requestMatchers("/api/v1/auth/logout").permitAll()
+                        .requestMatchers("/api/v1/auth/register/patient").permitAll()
+                        .requestMatchers("/api/v1/auth/register/doctor").hasRole("ADMIN")
                         // Swagger / OpenAPI endpoints
                         .requestMatchers(
                                 "/swagger-ui.html",
