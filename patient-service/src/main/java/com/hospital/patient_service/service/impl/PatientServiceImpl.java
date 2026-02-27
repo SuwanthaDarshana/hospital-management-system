@@ -12,6 +12,7 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,8 +98,7 @@ public class PatientServiceImpl implements PatientService {
 
         // If I am a PATIENT, and this email in the DB is NOT mine -> Block access
         if (loggedInRole.contains("ROLE_PATIENT") && !patient.getEmail().equals(loggedInEmail)) {
-            throw new RuntimeException("You are not authorized to update this profile");
-            // Better to use AccessDeniedException here
+            throw new AccessDeniedException("You are not authorized to update this profile");
         }
 
         // 3. Update fields

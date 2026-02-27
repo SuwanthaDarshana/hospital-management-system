@@ -7,21 +7,21 @@ spring:
   cloud:
     gateway:
       routes:
-        # Check token for doctor register
+        # ── Auth Service: protected endpoint (doctor registration — ADMIN only) ──
         - id: auth-register-doctor
           uri: lb://auth-service
           predicates:
             - Path=/api/v1/auth/register/doctor
           filters:
             - name: JwtFilter
-          
+
+        # ── Auth Service: public endpoints (no JWT required) ──
         - id: auth-service-public
           uri: lb://auth-service
           predicates:
             - Path=/api/v1/auth/**
-          filters:
-            - RewritePath=/api/v1/auth/(?<segment>.*), /api/v1/auth/${segment}
 
+        # ── Doctor Service (JWT required) ──
         - id: doctor-service
           uri: lb://doctor-service
           predicates:
@@ -29,6 +29,7 @@ spring:
           filters:
             - name: JwtFilter
 
+        # ── Patient Service (JWT required) ──
         - id: patient-service
           uri: lb://patient-service
           predicates:
@@ -43,5 +44,4 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
-
 
