@@ -1,0 +1,563 @@
+{
+  "info": {
+    "name": "Hospital Management System — Full API Tests",
+    "_postman_id": "hms-api-collection-v1",
+    "description": "Complete API test collection for HMS microservices. All requests go through the API Gateway on port 8080.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "BASE_URL",      "value": "http://localhost:8080" },
+    { "key": "ACCESS_TOKEN",  "value": "" },
+    { "key": "REFRESH_TOKEN", "value": "" },
+    { "key": "AUTH_USER_ID",  "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Auth Service",
+      "item": [
+        {
+          "name": "1.1 Login as ADMIN",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('ACCESS_TOKEN',  json.data.accessToken);",
+                  "pm.collectionVariables.set('REFRESH_TOKEN', json.data.refreshToken);",
+                  "pm.collectionVariables.set('AUTH_USER_ID',  json.data.id);",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has accessToken',  () => pm.expect(json.data.accessToken).to.be.a('string'));",
+                  "pm.test('Has refreshToken', () => pm.expect(json.data.refreshToken).to.be.a('string'));",
+                  "pm.test('Role is ADMIN',    () => pm.expect(json.data.role).to.eql('ADMIN'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@hospital.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/api/v1/auth/login", "host": ["{{BASE_URL}}"], "path": ["api","v1","auth","login"] }
+          }
+        },
+        {
+          "name": "1.2 Register Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "var json = pm.response.json();",
+                  "pm.test('Success true', () => pm.expect(json.success).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane.doe@gmail.com\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\",\n  \"password\": \"secret123\",\n  \"phone\": \"0771234567\",\n  \"address\": \"123 Main St, Colombo\",\n  \"gender\": \"Female\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"bloodGroup\": \"O+\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/api/v1/auth/register/patient", "host": ["{{BASE_URL}}"], "path": ["api","v1","auth","register","patient"] }
+          }
+        },
+        {
+          "name": "1.3 Register Doctor (ADMIN only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "var json = pm.response.json();",
+                  "pm.test('Role is DOCTOR', () => pm.expect(json.data.role).to.eql('DOCTOR'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"dr.smith@hospital.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Smith\",\n  \"password\": \"doctor123\",\n  \"phone\": \"0779876543\",\n  \"specialization\": \"Cardiology\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/api/v1/auth/register/doctor", "host": ["{{BASE_URL}}"], "path": ["api","v1","auth","register","doctor"] }
+          }
+        },
+        {
+          "name": "1.4 Login as Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('ACCESS_TOKEN',  json.data.accessToken);",
+                  "pm.collectionVariables.set('REFRESH_TOKEN', json.data.refreshToken);",
+                  "pm.collectionVariables.set('AUTH_USER_ID',  json.data.id);",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Role is PATIENT', () => pm.expect(json.data.role).to.eql('PATIENT'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane.doe@gmail.com\",\n  \"password\": \"secret123\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/api/v1/auth/login", "host": ["{{BASE_URL}}"], "path": ["api","v1","auth","login"] }
+          }
+        },
+        {
+          "name": "1.5 Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('ACCESS_TOKEN',  json.data.accessToken);",
+                  "pm.collectionVariables.set('REFRESH_TOKEN', json.data.refreshToken);",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('New accessToken issued',  () => pm.expect(json.data.accessToken).to.be.a('string'));",
+                  "pm.test('New refreshToken issued', () => pm.expect(json.data.refreshToken).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{REFRESH_TOKEN}}\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/api/v1/auth/refresh", "host": ["{{BASE_URL}}"], "path": ["api","v1","auth","refresh"] }
+          }
+        },
+        {
+          "name": "1.6 Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Logged out successfully', () => pm.expect(pm.response.json().message).to.include('Logged out'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{REFRESH_TOKEN}}\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/api/v1/auth/logout", "host": ["{{BASE_URL}}"], "path": ["api","v1","auth","logout"] }
+          }
+        },
+        {
+          "name": "1.7 Refresh with Expired/Used Token (expect 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401 or 404 — token rejected', () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([401, 404]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{REFRESH_TOKEN}}\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/api/v1/auth/refresh", "host": ["{{BASE_URL}}"], "path": ["api","v1","auth","refresh"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Doctor Service",
+      "item": [
+        {
+          "name": "2.0 [Setup] Login as ADMIN → get token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('ACCESS_TOKEN', json.data.accessToken);",
+                  "pm.collectionVariables.set('REFRESH_TOKEN', json.data.refreshToken);",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@hospital.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/api/v1/auth/login", "host": ["{{BASE_URL}}"], "path": ["api","v1","auth","login"] }
+          }
+        },
+        {
+          "name": "2.1 Get All Doctors",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Data is array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": { "raw": "{{BASE_URL}}/api/v1/doctors", "host": ["{{BASE_URL}}"], "path": ["api","v1","doctors"] }
+          }
+        },
+        {
+          "name": "2.2 Get Doctor by Auth User ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 404', () => pm.expect(pm.response.code).to.be.oneOf([200,404]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": { "raw": "{{BASE_URL}}/api/v1/doctors/2", "host": ["{{BASE_URL}}"], "path": ["api","v1","doctors","2"] }
+          }
+        },
+        {
+          "name": "2.3 Search Doctors by Specialization",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/doctors/search?specialization=Cardiology",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api","v1","doctors","search"],
+              "query": [{ "key": "specialization", "value": "Cardiology" }]
+            }
+          }
+        },
+        {
+          "name": "2.4 Update Doctor (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 404', () => pm.expect(pm.response.code).to.be.oneOf([200,404]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Smith\",\n  \"phone\": \"0779999999\",\n  \"specialization\": \"Neurology\",\n  \"availability\": \"{\\\"monday\\\": \\\"9:00-17:00\\\"}\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/api/v1/doctors/2", "host": ["{{BASE_URL}}"], "path": ["api","v1","doctors","2"] }
+          }
+        },
+        {
+          "name": "2.5 Access without Token (expect 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401 — no token', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{BASE_URL}}/api/v1/doctors", "host": ["{{BASE_URL}}"], "path": ["api","v1","doctors"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Patient Service",
+      "item": [
+        {
+          "name": "3.0 [Setup] Login as ADMIN → get token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('ACCESS_TOKEN', json.data.accessToken);",
+                  "pm.collectionVariables.set('REFRESH_TOKEN', json.data.refreshToken);",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@hospital.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/api/v1/auth/login", "host": ["{{BASE_URL}}"], "path": ["api","v1","auth","login"] }
+          }
+        },
+        {
+          "name": "3.1 Get All Patients",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Data is array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": { "raw": "{{BASE_URL}}/api/v1/patients", "host": ["{{BASE_URL}}"], "path": ["api","v1","patients"] }
+          }
+        },
+        {
+          "name": "3.2 Get Patient by Auth User ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 404', () => pm.expect(pm.response.code).to.be.oneOf([200,404]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": { "raw": "{{BASE_URL}}/api/v1/patients/3", "host": ["{{BASE_URL}}"], "path": ["api","v1","patients","3"] }
+          }
+        },
+        {
+          "name": "3.3 Dynamic Search Patients",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/patients/dynamic-search?bloodGroup=O%2B&isActive=true",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api","v1","patients","dynamic-search"],
+              "query": [
+                { "key": "bloodGroup", "value": "O+" },
+                { "key": "isActive",   "value": "true" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3.4 Update Patient (as Patient — own profile)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 404', () => pm.expect(pm.response.code).to.be.oneOf([200,404]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\",\n  \"email\": \"jane.doe@gmail.com\",\n  \"phone\": \"0771234567\",\n  \"address\": \"456 New St, Colombo\",\n  \"gender\": \"Female\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"bloodGroup\": \"O+\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/api/v1/patients/3", "host": ["{{BASE_URL}}"], "path": ["api","v1","patients","3"] }
+          }
+        },
+        {
+          "name": "3.5 Delete Patient (ADMIN/STAFF only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 404', () => pm.expect(pm.response.code).to.be.oneOf([200,404]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": { "raw": "{{BASE_URL}}/api/v1/patients/999", "host": ["{{BASE_URL}}"], "path": ["api","v1","patients","999"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Security Edge Cases",
+      "item": [
+        {
+          "name": "4.1 Doctor register WITHOUT token (expect 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401 — JWT required', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"hacker@bad.com\",\n  \"firstName\": \"Bad\",\n  \"lastName\": \"Actor\",\n  \"password\": \"pass123\",\n  \"phone\": \"0770000000\",\n  \"specialization\": \"None\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/api/v1/auth/register/doctor", "host": ["{{BASE_URL}}"], "path": ["api","v1","auth","register","doctor"] }
+          }
+        },
+        {
+          "name": "4.2 Doctor register with PATIENT token (expect 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 — Admin only', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"fake.doc@bad.com\",\n  \"firstName\": \"Fake\",\n  \"lastName\": \"Doctor\",\n  \"password\": \"pass123\",\n  \"phone\": \"0770000000\",\n  \"specialization\": \"None\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/api/v1/auth/register/doctor", "host": ["{{BASE_URL}}"], "path": ["api","v1","auth","register","doctor"] }
+          }
+        },
+        {
+          "name": "4.3 Login with wrong password (expect 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401 — bad credentials', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@hospital.com\",\n  \"password\": \"wrongpassword\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/api/v1/auth/login", "host": ["{{BASE_URL}}"], "path": ["api","v1","auth","login"] }
+          }
+        },
+        {
+          "name": "4.4 Access patient service with invalid token (expect 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401 — invalid token', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer this.is.a.fake.token" }],
+            "url": { "raw": "{{BASE_URL}}/api/v1/patients", "host": ["{{BASE_URL}}"], "path": ["api","v1","patients"] }
+          }
+        }
+      ]
+    }
+  ]
+}
