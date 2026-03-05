@@ -128,6 +128,55 @@ public class AuthServiceImpl implements AuthService {
                 return buildAuthResponse(user);
         }
 
+        // ─── Register Staff ─────────────────────────────────────────────────────
+
+        @Override
+        @Transactional
+        public AuthResponseDTO registerStaff(StaffRegisterRequestDTO dto) {
+            log.info("Registering new staff with email: {}", dto.getEmail());
+
+            if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+                log.warn("Staff registration failed — email already exists: {}", dto.getEmail());
+                throw new AccessDeniedException("Email already exists");
+            }
+
+            // Create and save auth user
+            User user = User.builder()
+                    .email(dto.getEmail())
+                    .password(passwordEncoder.encode(dto.getPassword()))
+                    .role(Role.STAFF)
+                    .build();
+
+            userRepository.save(user);
+            log.info("Staff user saved with id: {}", user.getId());
+
+            StaffCreatedEvent event = StaffCreatedEvent.builder()
+                    .authUserId(user.getId())
+                    .email(user.getEmail())
+                    .firstName(dto.getFirstName())
+                    .lastName(dto.getLastName())
+                    .phone(dto.getPhone())
+                    .department(dto.getDepartment())
+                    .address(dto.getAddress())
+                    .gender(dto.getGender())
+                    .dateOfBirth(dto.getDateOfBirth())
+                    .bloodGroup(dto.getBloodGroup())
+                    .role(Role.STAFF.name())
+                    .build();
+
+            rabbitTemplate.convertAndSend(
+                    RabbitConfig.STAFF_EXCHANGE,
+                    RabbitConfig.STAFF_ROUTING_KEY,
+                    event);
+
+            log.info("RabbitMQ: Staff registration event sent for {}", user.getEmail());
+
+            return buildAuthResponse(user);
+        }
+
+
+
+
         // ─── Login ────────────────────────────────────────────────────────────────
 
         @Override

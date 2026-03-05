@@ -26,6 +26,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/logout").permitAll()
                         .requestMatchers("/api/v1/auth/register/patient").permitAll()
                         .requestMatchers("/api/v1/auth/register/doctor").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/auth/register/staff").hasRole("ADMIN")
                         // Swagger / OpenAPI endpoints
                         .requestMatchers(
                                 "/swagger-ui.html",

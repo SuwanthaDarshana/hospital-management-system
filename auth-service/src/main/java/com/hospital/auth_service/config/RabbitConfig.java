@@ -34,6 +34,20 @@ public class RabbitConfig {
     public static final String PATIENT_UPDATE_EXCHANGE = "patient.update.exchange";
     public static final String PATIENT_UPDATE_ROUTING_KEY = "patient.updated";
 
+    // ================= AUTH → STAFF =================
+    // Patient created event
+    public static final String STAFF_QUEUE = "staff.queue";
+    public static final String STAFF_EXCHANGE = "staff.exchange";
+    public static final String STAFF_ROUTING_KEY = "staff.created";
+
+    // ================= STAFF → AUTH (Updates) =================
+    // Patient profile update → Auth update
+    public static final String STAFF_UPDATE_QUEUE = "staff.update.queue";
+    public static final String STAFF_UPDATE_EXCHANGE = "staff.update.exchange";
+    public static final String STAFF_UPDATE_ROUTING_KEY = "staff.updated";
+
+
+
 
 
     // ---------- Doctor Queue (Auth → Doctor) ----------
@@ -112,6 +126,50 @@ public class RabbitConfig {
                 .to(patientUpdateExchange())
                 .with(PATIENT_UPDATE_ROUTING_KEY);
     }
+
+
+    // ---------- Staff Queue (Auth → Patient) ----------
+    @Bean
+    public Queue staffQueue() {
+        return new Queue(STAFF_QUEUE, true);
+    }
+
+    @Bean
+    public TopicExchange staffExchange() {
+        return new TopicExchange(STAFF_EXCHANGE);
+    }
+
+    @Bean
+    public Binding staffBinding() {
+        return BindingBuilder
+                .bind(staffQueue())
+                .to(staffExchange())
+                .with(STAFF_ROUTING_KEY);
+    }
+
+
+    // ---------- Staff Update Queue ----------
+    @Bean
+    public Queue staffUpdateQueue() {
+        return new Queue(STAFF_UPDATE_QUEUE, true);
+    }
+
+    @Bean
+    public TopicExchange staffUpdateExchange() {
+        return new TopicExchange(STAFF_UPDATE_EXCHANGE);
+    }
+
+    @Bean
+    public Binding staffUpdateBinding() {
+        return BindingBuilder
+                .bind(staffUpdateQueue())
+                .to(staffUpdateExchange())
+                .with(STAFF_UPDATE_ROUTING_KEY);
+    }
+
+
+
+
 
     // JSON serialization
     @Bean

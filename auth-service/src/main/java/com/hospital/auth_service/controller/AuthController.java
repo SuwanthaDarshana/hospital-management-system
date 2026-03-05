@@ -61,6 +61,27 @@ public class AuthController {
                                                 .build());
         }
 
+
+    // ── Register Staff ───────────────────────────────────────────────────────
+
+    @Operation(summary = "Register a new staff", description = "Restricted to ADMIN role. Registers a new staff account.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Staff registered successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation error or email already exists"),
+            @ApiResponse(responseCode = "403", description = "Access denied — Admin only")
+    })
+    @PostMapping("/register/staff")
+    public ResponseEntity<StandardResponseDTO<AuthResponseDTO>> registerStaff(
+            @Valid @RequestBody StaffRegisterRequestDTO dto) {
+        log.info("POST /register/staff called for email: {}", dto.getEmail());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(StandardResponseDTO.<AuthResponseDTO>builder()
+                        .success(true)
+                        .message("Doctor registered successfully")
+                        .data(authService.registerStaff(dto))
+                        .build());
+    }
+
         // ── Login ─────────────────────────────────────────────────────────────────
 
         @Operation(summary = "User login",
