@@ -15,14 +15,17 @@ import java.time.LocalDate;
 public class StaffRequestDTO {
 
 
+    @NotBlank(message = "First name is required")
     @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
     @Schema(description = "Staff's first name", example = "John")
     private String firstName;
 
+    @NotBlank(message = "Last name is required")
     @Size(min = 2, max = 50, message = "Last name must be between 2 and 50 characters")
     @Schema(description = "Staff's last name", example = "Doe")
     private String lastName;
 
+    @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     @Schema(description = "Doctor's email address", example = "john.doe@hospital.com")
     private String email;

@@ -9,6 +9,6 @@ public interface StaffService {
     List<StaffResponseDTO> getAllStaff();
     StaffResponseDTO getStaffByAuthUserID(Long authUserId);
     StaffResponseDTO updateStaff(Long authUserId, StaffRequestDTO staffRequestDTO);
-    List<StaffResponseDTO> searchStaffDynamic(String name, String phone, String email, String bloodGroup, Boolean isActive);
-
+    List<StaffResponseDTO> searchStaffDynamic(String name, String phone, String email, String department, Boolean isActive);
+    void deactivateStaff(Long authUserId);
 }

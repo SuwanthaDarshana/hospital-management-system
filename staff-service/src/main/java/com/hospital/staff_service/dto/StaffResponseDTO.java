@@ -28,6 +28,9 @@ public class StaffResponseDTO {
     @Schema(description = "Staff department", example = "RECEPTION")
     private String department;
 
+    @Schema(description = "Staff role", example = "STAFF")
+    private String role;
+
     private String address;
     private String gender;
     private LocalDate dateOfBirth;
