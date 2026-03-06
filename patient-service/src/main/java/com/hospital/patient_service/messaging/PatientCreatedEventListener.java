@@ -4,11 +4,13 @@ import com.hospital.patient_service.dto.PatientCreatedEvent;
 import com.hospital.patient_service.entity.Patient;
 import com.hospital.patient_service.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class PatientCreatedEventListener {
 
     private final PatientRepository patientRepository;
@@ -33,7 +35,7 @@ public class PatientCreatedEventListener {
                 .role("PATIENT")
                 .build();
         patientRepository.save(patient);
-        System.out.println("Patient Service: Profile created automatically for " + event.getEmail());
+        log.info("Patient Service: Profile created automatically for {}", event.getEmail());
 
     }
 }

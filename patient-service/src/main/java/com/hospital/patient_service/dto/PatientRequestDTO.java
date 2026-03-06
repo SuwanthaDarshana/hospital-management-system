@@ -1,7 +1,5 @@
 package com.hospital.patient_service.dto;
 
-
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.*;
 

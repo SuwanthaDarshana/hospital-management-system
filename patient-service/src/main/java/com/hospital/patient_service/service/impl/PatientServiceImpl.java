@@ -10,6 +10,7 @@ import com.hospital.patient_service.repository.PatientRepository;
 import com.hospital.patient_service.service.PatientService;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PatientServiceImpl implements PatientService {
@@ -134,7 +136,7 @@ public class PatientServiceImpl implements PatientService {
                     RabbitConfig.PATIENT_UPDATE_ROUTING_KEY,
                     event
             );
-            System.out.println("Sync Message sent to Auth Service for: " + updatedPatient.getEmail());
+            log.info("Sync Message sent to Auth Service for: {}", updatedPatient.getEmail());
         }
 
         return mapToPatientResponseDTO(updatedPatient);
@@ -143,10 +145,15 @@ public class PatientServiceImpl implements PatientService {
     @Override
     @Transactional //JPA will handle the transaction rollback if any exception occurs
     public void deletePatient(Long id) {
-        if (!patientRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Patient not found with id: " + id);
-        }
-        patientRepository.deleteById(id);
+        // Industry Practice: Use Soft Delete (is_active = false)
+        Patient patient = patientRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + id));
+
+        patient.setActive(false);
+        patientRepository.save(patient);
+
+        // Log for auditing
+        log.info("✅ Patient record {} has been deactivated (Soft Deleted).", id);
 
     }
 

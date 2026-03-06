@@ -18,7 +18,7 @@ public class SwaggerConfig {
     public OpenAPI doctorServiceOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Doctor Service API")
+                        .title("Patient Service API")
                         .description("Hospital Management System — Patient Service")
                         .version("1.0.0")
                         .contact(new Contact()
