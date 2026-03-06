@@ -63,12 +63,12 @@ public class PatientController {
                 .build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<StandardResponseDTO<Void>> deletePatient(@PathVariable Long id) {
-        patientService.deletePatient(id);
+    @DeleteMapping("/{authUserId}")
+    public ResponseEntity<StandardResponseDTO<Void>> deletePatient(@PathVariable Long authUserId) {
+        patientService.deletePatient(authUserId);
         return ResponseEntity.ok(StandardResponseDTO.<Void>builder()
                 .success(true)
-                .message("Patient deactivated successfully") // Soft delete message
+                .message("Patient deactivated successfully")
                 .build());
     }
 

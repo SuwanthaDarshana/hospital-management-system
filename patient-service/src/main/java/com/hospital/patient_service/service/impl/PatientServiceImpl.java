@@ -143,18 +143,17 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    @Transactional //JPA will handle the transaction rollback if any exception occurs
-    public void deletePatient(Long id) {
+    @Transactional
+    public void deletePatient(Long authUserId) {
         // Industry Practice: Use Soft Delete (is_active = false)
-        Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + id));
+        Patient patient = patientRepository.findByAuthUserId(authUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with authUserId: " + authUserId));
 
         patient.setActive(false);
         patientRepository.save(patient);
 
         // Log for auditing
-        log.info("✅ Patient record {} has been deactivated (Soft Deleted).", id);
-
+        log.info("Patient record for authUserId {} has been deactivated (Soft Deleted).", authUserId);
     }
 
     //Entity convert to ResponseDTO

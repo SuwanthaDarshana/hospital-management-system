@@ -37,6 +37,14 @@ spring:
           filters:
             - name: JwtFilter
 
+        # ── Staff Service (JWT required) ──
+        - id: staff-service
+          uri: lb://staff-service
+          predicates:
+            - Path=/api/v1/staff/**
+          filters:
+            - name: JwtFilter
+
 jwt:
   secret: ${JWT_SECRET}
 

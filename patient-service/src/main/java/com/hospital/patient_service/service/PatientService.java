@@ -10,7 +10,7 @@ public interface PatientService {
     PatientResponseDTO getPatientByAuthUserId(Long authUserId);
     List<PatientResponseDTO> getAllPatients();
     PatientResponseDTO updatePatient(Long authUserId, PatientRequestDTO patientRequestDTO);
-    void deletePatient(Long id);
+    void deletePatient(Long authUserId);
     List<PatientResponseDTO> searchPatientsDynamic(String name, String phone, String email, String bloodGroup, Boolean isActive);
 
 

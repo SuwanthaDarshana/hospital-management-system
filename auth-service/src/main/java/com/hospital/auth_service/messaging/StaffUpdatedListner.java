@@ -48,9 +48,8 @@ public class StaffUpdatedListner {
             log.info("🔑 Password updated for user: {}", user.getEmail());
         }
 
-        // 4. Industry Standard: Sync Account Status
-        // If your User entity has an isActive or isEnabled field, update it here.
-        // user.setEnabled(event.getIsActive());
+        // 4. Sync Account Status — blocks login for deactivated staff
+        user.setEnabled(event.isActive());
 
         userRepository.save(user);
         log.info("✅ Auth Service successfully synchronized Staff user: {}", user.getEmail());

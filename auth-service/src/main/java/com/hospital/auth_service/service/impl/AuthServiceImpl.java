@@ -54,7 +54,7 @@ public class AuthServiceImpl implements AuthService {
 
                 if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
                         log.warn("Doctor registration failed — email already exists: {}", dto.getEmail());
-                        throw new AccessDeniedException("Email already exists");
+                        throw new IllegalArgumentException("Email already exists");
                 }
 
                 User user = User.builder()
@@ -94,7 +94,7 @@ public class AuthServiceImpl implements AuthService {
 
                 if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
                         log.warn("Patient registration failed — email already exists: {}", dto.getEmail());
-                        throw new AccessDeniedException("Email already exists");
+                        throw new IllegalArgumentException("Email already exists");
                 }
 
                 User user = User.builder()
@@ -137,7 +137,7 @@ public class AuthServiceImpl implements AuthService {
 
             if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
                 log.warn("Staff registration failed — email already exists: {}", dto.getEmail());
-                throw new AccessDeniedException("Email already exists");
+                throw new IllegalArgumentException("Email already exists");
             }
 
             // Create and save auth user
@@ -194,6 +194,11 @@ public class AuthServiceImpl implements AuthService {
                         throw new AccessDeniedException("Invalid credentials");
                 }
 
+                if (!user.isEnabled()) {
+                        log.warn("Login failed — account is disabled for email: {}", loginRequestDTO.getEmail());
+                        throw new AccessDeniedException("Account is disabled. Please contact administrator.");
+                }
+
                 log.info("Login successful for email: {}", user.getEmail());
                 return buildAuthResponse(user);
         }
@@ -211,6 +216,12 @@ public class AuthServiceImpl implements AuthService {
                 Long userId = existingToken.getUser().getId();
                 User user = userRepository.findById(userId)
                                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+                // Block disabled accounts from obtaining new tokens
+                if (!user.isEnabled()) {
+                        log.warn("Token refresh denied — account is disabled for user ID: {}", userId);
+                        throw new AccessDeniedException("Account is disabled. Please contact administrator.");
+                }
 
                 // Revoke old token and issue a new one (token rotation)
                 refreshTokenService.revokeAllUserTokens(user);

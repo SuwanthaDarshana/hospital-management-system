@@ -56,6 +56,19 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<StandardResponseDTO<Object>> handleIllegalArgument(IllegalArgumentException exception) {
+        log.warn("Bad request: {}", exception.getMessage());
+        return new ResponseEntity<>(
+                StandardResponseDTO.builder()
+                        .success(false)
+                        .message(exception.getMessage())
+                        .data(null)
+                        .build(),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<StandardResponseDTO<Map<String,String>>> handleValidation(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();

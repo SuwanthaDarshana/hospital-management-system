@@ -10,6 +10,11 @@ import lombok.*;
 public class DoctorUpdatedEvent {
     private Long authUserId;
     private String email;
+    private String firstName;
+    private String lastName;
+    private String phone;
+    private String specialization;
+    private String availability;
     private String password;
     private String role;
 }
