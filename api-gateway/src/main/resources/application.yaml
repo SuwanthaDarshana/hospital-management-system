@@ -6,12 +6,36 @@ spring:
     name: api-gateway
   cloud:
     gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:5173"
+              - "http://localhost:3000"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+            maxAge: 3600
       routes:
         # ── Auth Service: protected endpoint (doctor registration — ADMIN only) ──
         - id: auth-register-doctor
           uri: lb://auth-service
           predicates:
             - Path=/api/v1/auth/register/doctor
+          filters:
+            - name: JwtFilter
+
+        # ── Auth Service: protected endpoint (staff registration — ADMIN only) ──
+        - id: auth-register-staff
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/v1/auth/register/staff
           filters:
             - name: JwtFilter
 
@@ -42,6 +66,14 @@ spring:
           uri: lb://staff-service
           predicates:
             - Path=/api/v1/staff/**
+          filters:
+            - name: JwtFilter
+
+        # ── Appointment Service (JWT required) ──
+        - id: appointment-service
+          uri: lb://appointment-service
+          predicates:
+            - Path=/api/v1/appointments/**
           filters:
             - name: JwtFilter
 
