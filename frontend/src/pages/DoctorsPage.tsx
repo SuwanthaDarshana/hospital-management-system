@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
-import { getAllDoctors, searchDoctors, updateDoctor } from '../api/doctors';
+import { getAllDoctors, updateDoctor } from '../api/doctors';
 import { registerDoctor } from '../api/auth';
 import {
   Search, Stethoscope, Phone, Mail, Plus, X, Loader2, Pencil, Clock,
@@ -19,7 +19,7 @@ function AddDoctorModal({ onClose }: { onClose: () => void }) {
   const mutation = useMutation({
     mutationFn: () => registerDoctor(form),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['doctors'] }); onClose(); },
-    onError: (err: any) => setError(err.response?.data?.message || 'Registration failed.'),
+    onError: (err: unknown) => setError((err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Registration failed.'),
   });
 
   const set = (k: keyof RegisterDoctorRequest) =>
@@ -99,7 +99,7 @@ function EditDoctorModal({ doctor, onClose }: { doctor: Doctor; onClose: () => v
       return updateDoctor(doctor.authUserId, payload);
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['doctors'] }); onClose(); },
-    onError: (err: any) => setError(err.response?.data?.message || 'Update failed.'),
+    onError: (err: unknown) => setError((err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Update failed.'),
   });
 
   const set = (k: keyof DoctorUpdateRequest) =>
@@ -186,19 +186,24 @@ export default function DoctorsPage() {
   const isDoctor = user?.role === 'DOCTOR';
 
   const [search, setSearch] = useState('');
-  const [query, setQuery] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] = useState<Doctor | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['doctors', query],
-    queryFn: () =>
-      query
-        ? searchDoctors(query).then(r => r.data.data)
-        : getAllDoctors().then(r => r.data.data),
+    queryKey: ['doctors'],
+    queryFn: () => getAllDoctors().then(r => r.data.data),
   });
 
-  const doctors: Doctor[] = data ?? [];
+  const allDoctors: Doctor[] = data ?? [];
+
+  const q = search.trim().toLowerCase();
+  const doctors = q
+    ? allDoctors.filter(d =>
+        `${d.firstName} ${d.lastName}`.toLowerCase().includes(q) ||
+        d.email?.toLowerCase().includes(q) ||
+        d.specialization?.toLowerCase().includes(q)
+      )
+    : allDoctors;
 
   const canEdit = (doc: Doctor) =>
     isAdmin || (isDoctor && doc.email === user?.email);
@@ -222,17 +227,14 @@ export default function DoctorsPage() {
       </div>
 
       {/* Search */}
-      <div className="flex gap-2">
-        <div className="relative flex-1 max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            className="input pl-9" placeholder="Search by specialization…"
-            value={search} onChange={e => setSearch(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && setQuery(search)}
-          />
-        </div>
-        <button className="btn-primary" onClick={() => setQuery(search)}>Search</button>
-        {query && <button className="btn-secondary" onClick={() => { setSearch(''); setQuery(''); }}>Clear</button>}
+      <div className="relative max-w-sm">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          className="input pl-9"
+          placeholder="Search by name, specialization or email…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
       </div>
 
       {/* Cards */}

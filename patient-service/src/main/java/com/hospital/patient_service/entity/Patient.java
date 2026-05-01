@@ -59,9 +59,9 @@ public class Patient {
     private String gender;
 
     @NotNull(message = "Date of birth is required")
-    @Past(message = "Date of birth must be in the past")   //future date not allowed
+    @Past(message = "Date of birth must be in the past")
     @Column(nullable = false)
-    private LocalDate dateOfBirth; // industry standard
+    private LocalDate dateOfBirth;
 
     @Pattern(regexp = "^(A|B|AB|O)[+-]$", message = "Invalid blood group format (e.g., A+, O-)")
     @Column(length = 3)

@@ -17,25 +17,28 @@ public class PatientCreatedEventListener {
 
     @RabbitListener(queues = "patient.queue")
     public void handlePatientCreated(PatientCreatedEvent event) {
-        if (patientRepository.existsByEmail(event.getEmail())) {
-            return;
+        try {
+            if (patientRepository.existsByEmail(event.getEmail())) {
+                return;
+            }
+
+            Patient patient = Patient.builder()
+                    .authUserId(event.getAuthUserId())
+                    .firstName(event.getFirstName())
+                    .lastName(event.getLastName())
+                    .email(event.getEmail())
+                    .phone(event.getPhone())
+                    .address(event.getAddress())
+                    .gender(event.getGender())
+                    .dateOfBirth(event.getDateOfBirth())
+                    .bloodGroup(event.getBloodGroup())
+                    .isActive(event.isActive())
+                    .role("PATIENT")
+                    .build();
+            patientRepository.save(patient);
+            log.info("Patient Service: Profile created automatically for {}", event.getEmail());
+        } catch (Exception e) {
+            log.error("Patient Service: Failed to create profile for {} — message discarded: {}", event.getEmail(), e.getMessage());
         }
-
-        Patient patient = Patient.builder()
-                .authUserId(event.getAuthUserId())
-                .firstName(event.getFirstName())
-                .lastName(event.getLastName())
-                .email(event.getEmail())
-                .phone(event.getPhone())
-                .address(event.getAddress())
-                .gender(event.getGender())
-                .dateOfBirth(event.getDateOfBirth())
-                .bloodGroup(event.getBloodGroup())
-                .isActive(event.isActive())
-                .role("PATIENT")
-                .build();
-        patientRepository.save(patient);
-        log.info("Patient Service: Profile created automatically for {}", event.getEmail());
-
     }
 }
