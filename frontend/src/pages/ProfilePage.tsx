@@ -66,9 +66,9 @@ function PasswordSection({ onSave }: { onSave: (pw: string) => void }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // Doctor Profile
-// ─────────────────────────────────────────────────────────────────────────────
+
 
 function DoctorProfile({ authUserId }: { authUserId: number }) {
   const qc = useQueryClient();
@@ -179,9 +179,8 @@ function DoctorProfile({ authUserId }: { authUserId: number }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // Patient Profile
-// ─────────────────────────────────────────────────────────────────────────────
 
 function PatientProfile({ authUserId }: { authUserId: number }) {
   const qc = useQueryClient();
@@ -189,9 +188,11 @@ function PatientProfile({ authUserId }: { authUserId: number }) {
   const [pendingPw, setPendingPw] = useState('');
   const [error, setError] = useState('');
 
-  const { data: patient, isLoading } = useQuery({
+  const { data: patient, isLoading, isError } = useQuery({
     queryKey: ['my-patient', authUserId],
     queryFn: () => getPatientByAuthUserId(authUserId).then(r => r.data.data),
+    retry: 3,
+    retryDelay: 2000,
   });
 
   const [form, setForm] = useState<PatientUpdateRequest>({
@@ -224,6 +225,13 @@ function PatientProfile({ authUserId }: { authUserId: number }) {
   });
 
   if (isLoading) return <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600" /></div>;
+
+  if (isError) return (
+    <div className="card text-center py-12 space-y-2">
+      <p className="text-sm font-medium text-gray-700">Profile not ready yet</p>
+      <p className="text-xs text-gray-400">Your profile is still being set up. Please wait a moment and refresh the page.</p>
+    </div>
+  );
 
   const set = (k: keyof PatientUpdateRequest) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -325,9 +333,8 @@ function PatientProfile({ authUserId }: { authUserId: number }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // Staff Profile
-// ─────────────────────────────────────────────────────────────────────────────
 
 function StaffProfile({ authUserId }: { authUserId: number }) {
   const qc = useQueryClient();
@@ -462,9 +469,8 @@ function StaffProfile({ authUserId }: { authUserId: number }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // Admin — read-only info panel
-// ─────────────────────────────────────────────────────────────────────────────
 
 function AdminProfile() {
   const { user } = useAuthStore();
@@ -492,9 +498,9 @@ function AdminProfile() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // Root export
-// ─────────────────────────────────────────────────────────────────────────────
+
 
 export default function ProfilePage() {
   const { user } = useAuthStore();

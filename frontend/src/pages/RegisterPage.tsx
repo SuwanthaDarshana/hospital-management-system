@@ -7,7 +7,7 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', password: '', phone: '',
-    gender: '', dateOfBirth: '', bloodGroup: '',
+    address: '', gender: '', dateOfBirth: '', bloodGroup: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,8 +20,21 @@ export default function RegisterPage() {
     setError('');
     setLoading(true);
     try {
-      await registerPatient(form);
-      navigate('/login');
+      // Strip empty strings for optional fields — backend expects null/absent, not ""
+      // dateOfBirth especially: Jackson cannot parse "" as LocalDate → 400 error
+      const payload = {
+        firstName:   form.firstName,
+        lastName:    form.lastName,
+        email:       form.email,
+        password:    form.password,
+        phone:       form.phone,
+        address:     form.address,
+        gender:      form.gender,
+        dateOfBirth: form.dateOfBirth,
+        ...(form.bloodGroup && { bloodGroup: form.bloodGroup }),
+      };
+      await registerPatient(payload);
+      navigate('/login', { state: { registered: true } });
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
@@ -69,11 +82,11 @@ export default function RegisterPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="label">Phone</label>
-                <input className="input" value={form.phone} onChange={set('phone')} placeholder="0712345678" />
+                <input className="input" required value={form.phone} onChange={set('phone')} placeholder="0712345678" />
               </div>
               <div>
                 <label className="label">Gender</label>
-                <select className="input" value={form.gender} onChange={set('gender')}>
+                <select className="input" required value={form.gender} onChange={set('gender')}>
                   <option value="">Select</option>
                   <option>Male</option>
                   <option>Female</option>
@@ -81,10 +94,14 @@ export default function RegisterPage() {
                 </select>
               </div>
             </div>
+            <div>
+              <label className="label">Address</label>
+              <input className="input" required value={form.address} onChange={set('address')} placeholder="123 Main St, Colombo" />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="label">Date of birth</label>
-                <input className="input" type="date" value={form.dateOfBirth} onChange={set('dateOfBirth')} />
+                <input className="input" type="date" required value={form.dateOfBirth} onChange={set('dateOfBirth')} />
               </div>
               <div>
                 <label className="label">Blood group</label>

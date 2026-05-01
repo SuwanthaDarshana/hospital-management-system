@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import type { Doctor, RegisterDoctorRequest, DoctorUpdateRequest } from '../types';
 
-// ─── Add Doctor Modal (Admin only) ──────────────────────────────────────────
+// Add Doctor Modal (Admin only) 
 function AddDoctorModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<RegisterDoctorRequest>({
@@ -74,7 +74,7 @@ function AddDoctorModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ─── Edit Doctor Modal (Admin: all fields | Doctor: own profile limited fields) ──
+// Edit Doctor Modal (Admin: all fields | Doctor: own profile limited fields)
 function EditDoctorModal({ doctor, onClose }: { doctor: Doctor; onClose: () => void }) {
   const { user } = useAuthStore();
   const qc = useQueryClient();
@@ -179,7 +179,7 @@ function EditDoctorModal({ doctor, onClose }: { doctor: Doctor; onClose: () => v
   );
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────────
+// Main Page 
 export default function DoctorsPage() {
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'ADMIN';

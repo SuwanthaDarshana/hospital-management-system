@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { login } from '../api/auth';
-import { Hospital, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Hospital, Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,6 +12,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  const justRegistered = (location.state as any)?.registered === true;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +72,13 @@ export default function LoginPage() {
 
           <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
           <p className="mt-1 text-sm text-gray-500">Sign in to your account</p>
+
+          {justRegistered && (
+            <div className="mt-4 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700 flex items-center gap-2">
+              <CheckCircle2 size={16} className="shrink-0" />
+              Account created! Sign in with your new credentials.
+            </div>
+          )}
 
           {error && (
             <div className="mt-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
