@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
 import {
-  getAllAppointments, getMyAppointments, cancelAppointment, updateAppointmentStatus,
-  bookAppointment,
+  getAllAppointments, getMyAppointments, getAppointmentsByDoctor,
+  cancelAppointment, updateAppointmentStatus, bookAppointment,
 } from '../api/appointments';
 import { getAllDoctors } from '../api/doctors';
 import StatusBadge from '../components/StatusBadge';
@@ -13,11 +13,11 @@ import type { Appointment, Doctor } from '../types';
 
 function BookModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
+  const { user } = useAuthStore();
   const { data: doctorsData } = useQuery({ queryKey: ['doctors'], queryFn: () => getAllDoctors().then(r => r.data.data) });
   const doctors: Doctor[] = doctorsData ?? [];
 
   const [form, setForm] = useState({
-    patientAuthUserId: '',
     patientName: '',
     doctorAuthUserId: '',
     appointmentDate: '',
@@ -29,10 +29,11 @@ function BookModal({ onClose }: { onClose: () => void }) {
     mutationFn: () => {
       const doc = doctors.find(d => d.authUserId === Number(form.doctorAuthUserId));
       return bookAppointment({
-        patientAuthUserId: Number(form.patientAuthUserId),
+        patientAuthUserId: user!.authUserId,
         patientName: form.patientName,
         doctorAuthUserId: Number(form.doctorAuthUserId),
         doctorName: doc ? `Dr. ${doc.firstName} ${doc.lastName}` : 'Unknown',
+        doctorEmail: doc?.email,
         doctorSpecialization: doc?.specialization,
         appointmentDate: form.appointmentDate,
         appointmentTime: form.appointmentTime,
@@ -60,16 +61,15 @@ function BookModal({ onClose }: { onClose: () => void }) {
           className="px-6 py-5 space-y-4"
           onSubmit={e => { e.preventDefault(); mutation.mutate(); }}
         >
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="label">Your Auth User ID</label>
-              <input className="input" required type="number" placeholder="e.g. 3" value={form.patientAuthUserId} onChange={set('patientAuthUserId')} />
-            </div>
-            <div>
-              <label className="label">Your Full Name</label>
-              <input className="input" required value={form.patientName} onChange={set('patientName')} placeholder="John Doe" />
-            </div>
+          <div className="rounded-lg bg-blue-50 border border-blue-100 px-3 py-2 text-xs text-blue-700">
+            Booking as <span className="font-semibold">{user?.email}</span>
           </div>
+
+          <div>
+            <label className="label">Your Full Name</label>
+            <input className="input" required value={form.patientName} onChange={set('patientName')} placeholder="John Doe" />
+          </div>
+
           <div>
             <label className="label">Select Doctor</label>
             <select className="input" required value={form.doctorAuthUserId} onChange={set('doctorAuthUserId')}>
@@ -98,7 +98,7 @@ function BookModal({ onClose }: { onClose: () => void }) {
 
           {mutation.isError && (
             <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
-              {(mutation.error as any)?.response?.data?.message || 'Failed to book appointment.'}
+              {(mutation.error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to book appointment.'}
             </p>
           )}
 
@@ -120,28 +120,35 @@ export default function AppointmentsPage() {
   const [showBook, setShowBook] = useState(false);
   const [filterStatus, setFilterStatus] = useState('ALL');
   const isAdminOrStaff = user?.role === 'ADMIN' || user?.role === 'STAFF';
+  const isDoctor = user?.role === 'DOCTOR';
 
   const { data, isLoading } = useQuery({
-    queryKey: isAdminOrStaff ? ['appointments-all'] : ['appointments-my'],
+    queryKey: isAdminOrStaff
+      ? ['appointments-all']
+      : isDoctor
+        ? ['appointments-doctor', user?.authUserId]
+        : ['appointments-my'],
     queryFn: isAdminOrStaff
       ? () => getAllAppointments().then(r => r.data.data)
-      : () => getMyAppointments().then(r => r.data.data),
+      : isDoctor
+        ? () => getAppointmentsByDoctor(user!.authUserId).then(r => r.data.data)
+        : () => getMyAppointments().then(r => r.data.data),
   });
+
+  const invalidateAll = () => {
+    qc.invalidateQueries({ queryKey: ['appointments-all'] });
+    qc.invalidateQueries({ queryKey: ['appointments-my'] });
+    qc.invalidateQueries({ queryKey: ['appointments-doctor'] });
+  };
 
   const cancelMutation = useMutation({
     mutationFn: (id: number) => cancelAppointment(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['appointments-all'] });
-      qc.invalidateQueries({ queryKey: ['appointments-my'] });
-    },
+    onSuccess: invalidateAll,
   });
 
   const confirmMutation = useMutation({
     mutationFn: ({ id, status }: { id: number; status: string }) => updateAppointmentStatus(id, status),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['appointments-all'] });
-      qc.invalidateQueries({ queryKey: ['appointments-my'] });
-    },
+    onSuccess: invalidateAll,
   });
 
   const all: Appointment[] = data ?? [];

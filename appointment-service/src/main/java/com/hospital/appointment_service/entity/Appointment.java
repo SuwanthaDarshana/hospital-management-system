@@ -41,6 +41,8 @@ public class Appointment {
     @Column(nullable = false)
     private String doctorName;
 
+    private String doctorEmail;
+
     private String doctorSpecialization;
 
     // Appointment details

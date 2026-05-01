@@ -30,6 +30,9 @@ public class AppointmentRequestDTO {
     @Schema(description = "Doctor's full name", example = "Dr. Jane Smith")
     private String doctorName;
 
+    @Schema(description = "Doctor's email address", example = "dr.smith@hospital.com")
+    private String doctorEmail;
+
     @Schema(description = "Doctor's specialization", example = "Cardiology")
     private String doctorSpecialization;
 

@@ -165,6 +165,7 @@ export interface AppointmentRequest {
   patientName: string;
   doctorAuthUserId: number;
   doctorName: string;
+  doctorEmail?: string;
   doctorSpecialization?: string;
   appointmentDate: string;
   appointmentTime: string;

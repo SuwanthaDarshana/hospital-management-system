@@ -43,6 +43,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .patientName(request.getPatientName())
                 .doctorAuthUserId(request.getDoctorAuthUserId())
                 .doctorName(request.getDoctorName())
+                .doctorEmail(request.getDoctorEmail())
                 .doctorSpecialization(request.getDoctorSpecialization())
                 .appointmentDate(request.getAppointmentDate())
                 .appointmentTime(request.getAppointmentTime())
@@ -80,12 +81,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public List<AppointmentResponseDTO> getMyAppointments(String email, String role) {
         if ("DOCTOR".equalsIgnoreCase(role)) {
-            // Doctors see appointments where they are assigned — filtered by their email if we had it,
-            // but since we store doctorAuthUserId, the doctor must use the /doctor/{id} endpoint.
-            // For /my endpoint, we return by patientEmail if PATIENT, or all if ADMIN/STAFF.
-            return appointmentRepository.findAll().stream()
-                    .filter(a -> email.equalsIgnoreCase(a.getPatientEmail()))
-                    .map(this::toDTO).collect(Collectors.toList());
+            return appointmentRepository.findByDoctorEmail(email)
+                    .stream().map(this::toDTO).collect(Collectors.toList());
         }
         return appointmentRepository.findByPatientEmail(email)
                 .stream().map(this::toDTO).collect(Collectors.toList());
