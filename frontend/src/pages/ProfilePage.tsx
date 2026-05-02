@@ -1,13 +1,20 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
-import { getDoctorByAuthUserId, updateDoctor } from '../api/doctors';
+import { getDoctorByAuthUserId, updateDoctor, updateDoctorAvailability } from '../api/doctors';
 import { getPatientByAuthUserId, updatePatient } from '../api/patients';
 import { apiClient } from '../api/client';
 import {
   User, Mail, Phone, MapPin, Droplets, Calendar, Shield, Stethoscope,
-  Pencil, X, Loader2, CheckCircle, Lock, Clock,
+  Pencil, X, Loader2, CheckCircle, Lock, Clock, CircleDot,
 } from 'lucide-react';
+
+type AvailStatus = 'NOT_SET' | 'AVAILABLE' | 'NOT_AVAILABLE';
+const AVAIL_CFG: Record<AvailStatus, { label: string; dot: string; badge: string }> = {
+  AVAILABLE:     { label: 'Available for appointments', dot: 'text-green-500',  badge: 'bg-green-100 text-green-700' },
+  NOT_AVAILABLE: { label: 'Not Available',              dot: 'text-red-500',    badge: 'bg-red-100 text-red-700' },
+  NOT_SET:       { label: 'Status not set',             dot: 'text-gray-400',   badge: 'bg-gray-100 text-gray-500' },
+};
 import type { Staff, StaffUpdateRequest, StandardResponse, DoctorUpdateRequest, PatientUpdateRequest } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -72,9 +79,10 @@ function PasswordSection({ onSave }: { onSave: (pw: string) => void }) {
 
 function DoctorProfile({ authUserId }: { authUserId: number }) {
   const qc = useQueryClient();
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing]     = useState(false);
   const [pendingPw, setPendingPw] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError]         = useState('');
+  const [availError, setAvailError] = useState('');
 
   const { data: doctor, isLoading } = useQuery({
     queryKey: ['my-doctor', authUserId],
@@ -94,17 +102,39 @@ function DoctorProfile({ authUserId }: { authUserId: number }) {
     setPendingPw('');
   };
 
+  // General profile update
   const mutation = useMutation({
     mutationFn: () => updateDoctor(authUserId, { ...form, ...(pendingPw ? { password: pendingPw } : {}) }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['my-doctor', authUserId] }); setEditing(false); },
     onError: (err: any) => setError(err.response?.data?.message || 'Update failed.'),
   });
 
-  if (isLoading) return <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600" /></div>;
+  // Dedicated availability status update
+  const availMutation = useMutation({
+    mutationFn: (status: string) => updateDoctorAvailability(authUserId, status),
+    onSuccess: () => {
+      setAvailError('');
+      qc.invalidateQueries({ queryKey: ['my-doctor', authUserId] });
+      qc.invalidateQueries({ queryKey: ['doctors'] });
+    },
+    onError: (err: any) => setAvailError(err.response?.data?.message || 'Failed to update status.'),
+  });
+
+  if (isLoading) return (
+    <div className="flex justify-center py-20">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600" />
+    </div>
+  );
 
   const set = (k: keyof DoctorUpdateRequest) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const currentStatus: AvailStatus =
+    doctor?.availabilityStatus && AVAIL_CFG[doctor.availabilityStatus as AvailStatus]
+      ? (doctor.availabilityStatus as AvailStatus)
+      : 'NOT_SET';
+  const cfg = AVAIL_CFG[currentStatus];
 
   return (
     <div className="space-y-6">
@@ -113,30 +143,74 @@ function DoctorProfile({ authUserId }: { authUserId: number }) {
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-100 shrink-0">
           <Stethoscope size={28} className="text-primary-600" />
         </div>
-        <div className="flex-1">
-          <h2 className="text-lg font-bold text-gray-900">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-lg font-bold text-gray-900 truncate">
             Dr. {doctor?.firstName} {doctor?.lastName}
           </h2>
           <p className="text-sm text-gray-500">{doctor?.specialization || 'General Practitioner'}</p>
           <span className="mt-1 badge bg-primary-100 text-primary-700">DOCTOR</span>
         </div>
         {!editing && (
-          <button className="btn-secondary" onClick={startEdit}>
+          <button className="btn-secondary shrink-0" onClick={startEdit}>
             <Pencil size={15} /> Edit Profile
           </button>
         )}
       </div>
 
+      {/* ── Availability Status Card (always visible) ── */}
+      <div className="card space-y-4">
+        <div className="flex items-center gap-2">
+          <CircleDot size={16} className={cfg.dot} />
+          <h3 className="font-semibold text-gray-900">Appointment Availability</h3>
+        </div>
+
+        <p className="text-sm text-gray-500">
+          Control whether patients can book new appointments with you.
+          Only <strong>Available</strong> doctors appear in the booking form.
+        </p>
+
+        {/* Current status badge */}
+        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 ${cfg.badge}`}>
+          <CircleDot size={10} />
+          {cfg.label}
+        </span>
+
+        {/* Instant-save select */}
+        <div className="space-y-1.5">
+          <label className="label">Change status</label>
+          <select
+            className="input"
+            value={currentStatus}
+            disabled={availMutation.isPending}
+            onChange={e => availMutation.mutate(e.target.value)}
+          >
+            <option value="NOT_SET">— Not Set —</option>
+            <option value="AVAILABLE">✅ Available for appointments</option>
+            <option value="NOT_AVAILABLE">🔴 Not Available</option>
+          </select>
+          {availMutation.isPending && (
+            <p className="text-xs text-gray-400 flex items-center gap-1">
+              <Loader2 size={11} className="animate-spin" /> Saving…
+            </p>
+          )}
+          {availMutation.isSuccess && !availError && (
+            <p className="text-xs text-green-600 flex items-center gap-1">
+              <CheckCircle size={11} /> Status updated successfully
+            </p>
+          )}
+          {availError && <p className="text-xs text-red-500">{availError}</p>}
+        </div>
+      </div>
+
+      {/* ── Profile info / edit ── */}
       {!editing ? (
-        /* View mode */
         <div className="card grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <InfoRow icon={<Mail size={15} className="text-gray-500" />}    label="Email"          value={doctor?.email} />
-          <InfoRow icon={<Phone size={15} className="text-gray-500" />}   label="Phone"          value={doctor?.phone} />
+          <InfoRow icon={<Mail size={15} className="text-gray-500" />}        label="Email"          value={doctor?.email} />
+          <InfoRow icon={<Phone size={15} className="text-gray-500" />}       label="Phone"          value={doctor?.phone} />
           <InfoRow icon={<Stethoscope size={15} className="text-gray-500" />} label="Specialization" value={doctor?.specialization} />
-          <InfoRow icon={<Clock size={15} className="text-gray-500" />}   label="Availability"   value={doctor?.availability} />
+          <InfoRow icon={<Clock size={15} className="text-gray-500" />}       label="Schedule"       value={doctor?.availability || 'Not set'} />
         </div>
       ) : (
-        /* Edit mode */
         <div className="card space-y-5">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-gray-900">Edit Profile</h3>
@@ -154,7 +228,10 @@ function DoctorProfile({ authUserId }: { authUserId: number }) {
             </div>
           </div>
           <div>
-            <label className="label">Availability <span className="text-gray-400 font-normal text-xs">(JSON format)</span></label>
+            <label className="label">
+              Weekly Schedule
+              <span className="text-gray-400 font-normal text-xs ml-1">(JSON format, optional)</span>
+            </label>
             <textarea
               className="input resize-none font-mono text-xs" rows={3}
               value={form.availability ?? ''} onChange={set('availability')}
