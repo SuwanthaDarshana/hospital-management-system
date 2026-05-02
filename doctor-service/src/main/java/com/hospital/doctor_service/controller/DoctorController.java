@@ -94,13 +94,23 @@ public class DoctorController {
 
 
 
+    @Operation(summary = "Update availability status", description = "Doctors set their own; admins can set any doctor.")
+    @PatchMapping("/{authUserId}/availability")
+    public ResponseEntity<StandardResponseDTO<DoctorResponseDTO>> updateAvailability(
+            @PathVariable Long authUserId,
+            @RequestParam String status,
+            @RequestHeader("X-User-Email") String callerEmail,
+            @RequestHeader("X-User-Role")  String callerRole) {
+        return ResponseEntity.ok(
+                StandardResponseDTO.<DoctorResponseDTO>builder()
+                        .success(true)
+                        .message("Availability status updated")
+                        .data(doctorService.updateAvailabilityStatus(authUserId, status, callerEmail, callerRole))
+                        .build()
+        );
+    }
+
     @Operation(summary = "Search doctors by specialization", description = "Search for doctors by their specialization")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved filtered list of doctors",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = StandardResponseDTO.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authentication")
-    })
     @GetMapping("/search")
     public ResponseEntity<StandardResponseDTO<List<DoctorResponseDTO>>> searchDoctors(
             @Parameter(description = "Specialization to search for", required = true, example = "Cardiology")

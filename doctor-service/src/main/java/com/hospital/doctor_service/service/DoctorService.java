@@ -9,7 +9,8 @@ public interface DoctorService {
     List<DoctorResponseDTO> getAllDoctors();
     DoctorResponseDTO getDoctorByAuthUserId(Long authUserId);
     DoctorResponseDTO updateDoctor(Long authUserId,DoctorRequestDTO doctorRequestDTO);
-    List<DoctorResponseDTO> searchBySpecialization (String specialization);
+    List<DoctorResponseDTO> searchBySpecialization(String specialization);
+    DoctorResponseDTO updateAvailabilityStatus(Long authUserId, String status, String callerEmail, String callerRole);
 
 
 }

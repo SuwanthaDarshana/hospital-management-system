@@ -9,6 +9,7 @@ import com.hospital.doctor_service.exception.ResourceNotFoundException;
 import com.hospital.doctor_service.repository.DoctorRepository;
 import com.hospital.doctor_service.service.DoctorService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DoctorServiceImpl implements DoctorService {
@@ -127,6 +129,28 @@ public class DoctorServiceImpl implements DoctorService {
                 .findFirst()
                 .orElse("ROLE_ANONYMOUS")
                 .replace("ROLE_", "");
+    }
+
+    // ========================= AVAILABILITY =========================
+
+    @Override
+    public DoctorResponseDTO updateAvailabilityStatus(Long authUserId, String status, String callerEmail, String callerRole) {
+        Doctor doctor = doctorRepository.findByAuthUserId(authUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
+
+        if ("DOCTOR".equalsIgnoreCase(callerRole) && !doctor.getEmail().equalsIgnoreCase(callerEmail)) {
+            throw new RuntimeException("Access Denied: You can only update your own availability.");
+        }
+
+        if (!java.util.List.of("NOT_SET", "AVAILABLE", "NOT_AVAILABLE").contains(status)) {
+            throw new IllegalArgumentException("Invalid status. Must be NOT_SET, AVAILABLE, or NOT_AVAILABLE.");
+        }
+
+        doctor.setAvailabilityStatus(status);
+        doctor.setUpdatedAt(java.time.LocalDateTime.now());
+        doctorRepository.save(doctor);
+        log.info("Availability status for doctor {} updated to {} by {}", authUserId, status, callerEmail);
+        return mapToResponse(doctor);
     }
 
     // ========================= SEARCH =========================

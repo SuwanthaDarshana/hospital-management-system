@@ -12,3 +12,8 @@ export const searchDoctors = (specialization: string) =>
 
 export const updateDoctor = (authUserId: number, data: DoctorUpdateRequest) =>
   apiClient.put<StandardResponse<Doctor>>(`/api/v1/doctors/${authUserId}`, data);
+
+export const updateDoctorAvailability = (authUserId: number, status: string) =>
+  apiClient.patch<StandardResponse<Doctor>>(
+    `/api/v1/doctors/${authUserId}/availability?status=${encodeURIComponent(status)}`
+  );

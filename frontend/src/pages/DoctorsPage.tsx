@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
-import { getAllDoctors, updateDoctor } from '../api/doctors';
+import { getAllDoctors, updateDoctor, updateDoctorAvailability } from '../api/doctors';
 import { registerDoctor } from '../api/auth';
 import {
   Search, Stethoscope, Phone, Mail, Plus, X, Loader2, Pencil, Clock, CircleDot,
@@ -227,10 +227,20 @@ export default function DoctorsPage() {
   const canEdit = (doc: Doctor) =>
     isAdmin || (isDoctor && doc.email === user?.email);
 
+  const [statusError, setStatusError] = useState<string | null>(null);
+
   const statusMutation = useMutation({
     mutationFn: ({ authUserId, status }: { authUserId: number; status: string }) =>
-      updateDoctor(authUserId, { availabilityStatus: status as DoctorUpdateRequest['availabilityStatus'] }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['doctors'] }),
+      updateDoctorAvailability(authUserId, status),
+    onSuccess: () => {
+      setStatusError(null);
+      qc.invalidateQueries({ queryKey: ['doctors'] });
+    },
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message || 'Failed to update availability.';
+      setStatusError(msg);
+    },
   });
 
   return (
@@ -305,26 +315,38 @@ export default function DoctorsPage() {
                   )}
                 </div>
 
-                {/* Availability status row */}
-                <div className="mt-3 flex items-center gap-2">
-                  {/* Coloured badge — always visible */}
-                  <span className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-full px-2.5 py-1 shrink-0 ${cfg.classes}`}>
-                    <CircleDot size={10} />
-                    {cfg.label}
-                  </span>
+                {/* Availability status */}
+                <div className="mt-3 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <CircleDot size={12} className={
+                      status === 'AVAILABLE' ? 'text-green-500' :
+                      status === 'NOT_AVAILABLE' ? 'text-red-500' : 'text-gray-400'
+                    } />
+                    <span className={`text-xs font-semibold ${cfg.classes.split(' ').find(c => c.startsWith('text-')) ?? 'text-gray-500'}`}>
+                      {cfg.label}
+                    </span>
+                  </div>
 
-                  {/* Editable select — only for admin / own profile */}
                   {canEdit(doc) && (
-                    <select
-                      className="input text-xs py-1 flex-1"
-                      value={status}
-                      disabled={statusMutation.isPending}
-                      onChange={e => statusMutation.mutate({ authUserId: doc.authUserId, status: e.target.value })}
-                    >
-                      <option value="NOT_SET">Not Set</option>
-                      <option value="AVAILABLE">Available</option>
-                      <option value="NOT_AVAILABLE">Not Available</option>
-                    </select>
+                    <div className="space-y-1">
+                      <label className="text-xs text-gray-400">Change availability</label>
+                      <select
+                        className="input text-sm w-full"
+                        value={status}
+                        disabled={statusMutation.isPending}
+                        onChange={e => statusMutation.mutate({ authUserId: doc.authUserId, status: e.target.value })}
+                      >
+                        <option value="NOT_SET">— Not Set —</option>
+                        <option value="AVAILABLE">✅ Available</option>
+                        <option value="NOT_AVAILABLE">🔴 Not Available</option>
+                      </select>
+                      {statusMutation.isPending && (
+                        <p className="text-xs text-gray-400">Saving…</p>
+                      )}
+                      {statusError && (
+                        <p className="text-xs text-red-500">{statusError}</p>
+                      )}
+                    </div>
                   )}
                 </div>
 
