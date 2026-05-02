@@ -25,7 +25,8 @@ export default function PatientsPage() {
     queryKey: ['patients-for-doctor', user?.authUserId],
     queryFn: async () => {
       const appointments = await getAppointmentsByDoctor(user!.authUserId).then(r => r.data.data);
-      const uniqueIds = [...new Set(appointments.map(a => a.patientAuthUserId))];
+      const confirmed = appointments.filter(a => a.status === 'CONFIRMED' || a.status === 'COMPLETED');
+      const uniqueIds = [...new Set(confirmed.map(a => a.patientAuthUserId))];
       if (uniqueIds.length === 0) return [];
       return Promise.all(uniqueIds.map(id => getPatientByAuthUserId(id).then(r => r.data.data)));
     },
@@ -55,7 +56,7 @@ export default function PatientsPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">{isDoctor ? 'My Patients' : 'Patients'}</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          {isDoctor ? 'Patients who have appointments with you' : `${patients.length} patient${patients.length !== 1 ? 's' : ''}`}
+          {isDoctor ? 'Patients with a confirmed or completed appointment' : `${patients.length} patient${patients.length !== 1 ? 's' : ''}`}
         </p>
       </div>
 
@@ -85,7 +86,7 @@ export default function PatientsPage() {
             <tbody className="divide-y divide-gray-100 bg-white">
               {patients.length === 0 ? (
                 <tr><td colSpan={isDoctor ? 5 : 6} className="td text-center py-10 text-gray-400">
-                  {isDoctor ? 'No patients with appointments yet.' : 'No patients found.'}
+                  {isDoctor ? 'No confirmed patients yet.' : 'No patients found.'}
                 </td></tr>
               ) : patients.map(p => (
                 <tr key={p.id} className="hover:bg-gray-50 transition-colors">

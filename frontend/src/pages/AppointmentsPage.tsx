@@ -139,6 +139,7 @@ export default function AppointmentsPage() {
     qc.invalidateQueries({ queryKey: ['appointments-all'] });
     qc.invalidateQueries({ queryKey: ['appointments-my'] });
     qc.invalidateQueries({ queryKey: ['appointments-doctor'] });
+    qc.invalidateQueries({ queryKey: ['patients-for-doctor'] });
   };
 
   const cancelMutation = useMutation({
