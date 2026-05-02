@@ -23,12 +23,22 @@ export default function PatientsPage() {
   // DOCTOR — fetch appointments → deduplicate patient IDs → fetch each patient
   const { data: doctorData, isLoading: doctorLoading } = useQuery({
     queryKey: ['patients-for-doctor', user?.authUserId],
+    staleTime: 0,                // always refetch when navigating to this tab
     queryFn: async () => {
       const appointments = await getAppointmentsByDoctor(user!.authUserId).then(r => r.data.data);
-      const confirmed = appointments.filter(a => a.status === 'CONFIRMED' || a.status === 'COMPLETED');
-      const uniqueIds = [...new Set(confirmed.map(a => a.patientAuthUserId))];
+      const active = appointments.filter(
+        a => a.status === 'CONFIRMED' || a.status === 'COMPLETED'
+      );
+      const uniqueIds = [...new Set(active.map(a => a.patientAuthUserId))];
       if (uniqueIds.length === 0) return [];
-      return Promise.all(uniqueIds.map(id => getPatientByAuthUserId(id).then(r => r.data.data)));
+
+      // allSettled so one failed fetch doesn't hide all other patients
+      const results = await Promise.allSettled(
+        uniqueIds.map(id => getPatientByAuthUserId(id).then(r => r.data.data))
+      );
+      return results
+        .filter((r): r is PromiseFulfilledResult<Patient> => r.status === 'fulfilled')
+        .map(r => r.value);
     },
     enabled: isDoctor,
   });
