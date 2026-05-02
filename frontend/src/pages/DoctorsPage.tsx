@@ -211,6 +211,8 @@ export default function DoctorsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['doctors'],
     queryFn: () => getAllDoctors().then(r => r.data.data),
+    refetchInterval: 15_000,        // re-fetch every 15 s so cross-session changes appear automatically
+    refetchIntervalInBackground: false, // pause polling when tab is not visible
   });
 
   const allDoctors: Doctor[] = data ?? [];
