@@ -381,8 +381,6 @@ function StaffProfile({ authUserId }: { authUserId: number }) {
 
   if (isLoading) return <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600" /></div>;
 
-  const DEPARTMENTS = ['RECEPTION', 'PHARMACY', 'LAB', 'NURSING', 'ADMIN', 'BILLING', 'RADIOLOGY'];
-
   const set = (k: keyof StaffUpdateRequest) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm(f => ({ ...f, [k]: e.target.value }));
@@ -421,41 +419,47 @@ function StaffProfile({ authUserId }: { authUserId: number }) {
             <h3 className="font-semibold text-gray-900">Edit Profile</h3>
             <button onClick={() => setEditing(false)} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div><label className="label">First name *</label><input className="input" required value={form.firstName} onChange={set('firstName')} /></div>
-            <div><label className="label">Last name *</label><input className="input" required value={form.lastName} onChange={set('lastName')} /></div>
-          </div>
-          <div><label className="label">Email *</label><input className="input" type="email" required value={form.email} onChange={set('email')} /></div>
-          <div className="grid grid-cols-2 gap-4">
-            <div><label className="label">Phone</label><input className="input" value={form.phone ?? ''} onChange={set('phone')} placeholder="0771234567" /></div>
-            <div>
-              <label className="label">Department</label>
-              <select className="input" value={form.department ?? ''} onChange={set('department')}>
-                <option value="">Select…</option>
-                {DEPARTMENTS.map(d => <option key={d}>{d}</option>)}
-              </select>
+
+          {/* Read-only admin-controlled fields */}
+          <div className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 space-y-2">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Managed by Admin</p>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-xs text-gray-400">Email</p>
+                <p className="text-gray-700 font-medium truncate">{staff?.email}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Department</p>
+                <p className="text-gray-700 font-medium">{staff?.department || '—'}</p>
+              </div>
             </div>
           </div>
+
+          {/* Editable personal fields */}
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="label">First name</label><input className="input" required value={form.firstName} onChange={set('firstName')} /></div>
+            <div><label className="label">Last name</label><input className="input" required value={form.lastName} onChange={set('lastName')} /></div>
+          </div>
+          <div><label className="label">Phone</label><input className="input" value={form.phone ?? ''} onChange={set('phone')} placeholder="0771234567" /></div>
+          <div><label className="label">Address</label><input className="input" value={form.address ?? ''} onChange={set('address')} placeholder="123 Main St, Colombo" /></div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">Gender *</label>
-              <select className="input" required value={form.gender} onChange={set('gender')}>
+              <label className="label">Gender</label>
+              <select className="input" value={form.gender ?? ''} onChange={set('gender')}>
                 <option value="">Select…</option>
                 <option>Male</option><option>Female</option><option>Other</option>
               </select>
             </div>
-            <div><label className="label">Date of birth *</label><input className="input" type="date" required value={form.dateOfBirth} onChange={set('dateOfBirth')} /></div>
+            <div><label className="label">Date of birth</label><input className="input" type="date" value={form.dateOfBirth ?? ''} onChange={set('dateOfBirth')} /></div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="label">Blood group</label>
-              <select className="input" value={form.bloodGroup ?? ''} onChange={set('bloodGroup')}>
-                <option value="">Select…</option>
-                {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(g => <option key={g}>{g}</option>)}
-              </select>
-            </div>
-            <div><label className="label">Address *</label><input className="input" required value={form.address} onChange={set('address')} /></div>
+          <div>
+            <label className="label">Blood group</label>
+            <select className="input" value={form.bloodGroup ?? ''} onChange={set('bloodGroup')}>
+              <option value="">Select…</option>
+              {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(g => <option key={g}>{g}</option>)}
+            </select>
           </div>
+
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
           <div className="flex gap-3">
             <button className="btn-secondary flex-1" onClick={() => setEditing(false)}>Cancel</button>
