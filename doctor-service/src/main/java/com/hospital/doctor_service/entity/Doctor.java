@@ -2,6 +2,7 @@ package com.hospital.doctor_service.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import jakarta.persistence.PostLoad;
 
 import java.time.LocalDateTime;
 
@@ -34,9 +35,13 @@ public class Doctor {
     @Column(columnDefinition = "TEXT")
     private String availability;
 
-    @Column(nullable = false)
     @Builder.Default
     private String availabilityStatus = "NOT_SET";
+
+    @PostLoad
+    private void fillDefaults() {
+        if (availabilityStatus == null) availabilityStatus = "NOT_SET";
+    }
 
     private String role;
 

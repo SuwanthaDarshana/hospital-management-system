@@ -272,8 +272,11 @@ export default function DoctorsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {doctors.map(doc => {
-            const status = doc.availabilityStatus ?? 'NOT_SET';
-            const cfg    = STATUS_CONFIG[status];
+            const status: AvailabilityStatus =
+              doc.availabilityStatus && STATUS_CONFIG[doc.availabilityStatus]
+                ? doc.availabilityStatus
+                : 'NOT_SET';
+            const cfg = STATUS_CONFIG[status];
             return (
               <div key={doc.id} className="card hover:shadow-md transition-shadow group">
                 {/* Header row */}

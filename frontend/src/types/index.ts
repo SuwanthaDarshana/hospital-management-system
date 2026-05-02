@@ -65,7 +65,7 @@ export interface Doctor {
   email: string;
   phone: string;
   availability?: string;
-  availabilityStatus: AvailabilityStatus;
+  availabilityStatus?: AvailabilityStatus;
 }
 
 // fields a doctor can update (PUT /api/v1/doctors/{authUserId})
