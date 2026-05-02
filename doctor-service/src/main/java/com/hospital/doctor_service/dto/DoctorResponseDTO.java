@@ -31,4 +31,7 @@ public class DoctorResponseDTO {
 
     @Schema(description = "Doctor's availability schedule in JSON format", example = "{\"monday\": \"9:00-17:00\", \"tuesday\": \"9:00-17:00\"}")
     private String availability;
+
+    @Schema(description = "Doctor's availability status", example = "AVAILABLE", allowableValues = {"NOT_SET", "AVAILABLE", "NOT_AVAILABLE"})
+    private String availabilityStatus;
 }

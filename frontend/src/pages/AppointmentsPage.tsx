@@ -15,7 +15,7 @@ function BookModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
   const { user } = useAuthStore();
   const { data: doctorsData } = useQuery({ queryKey: ['doctors'], queryFn: () => getAllDoctors().then(r => r.data.data) });
-  const doctors: Doctor[] = doctorsData ?? [];
+  const doctors: Doctor[] = (doctorsData ?? []).filter(d => d.availabilityStatus === 'AVAILABLE');
 
   const [form, setForm] = useState({
     patientName: '',
@@ -72,14 +72,20 @@ function BookModal({ onClose }: { onClose: () => void }) {
 
           <div>
             <label className="label">Select Doctor</label>
-            <select className="input" required value={form.doctorAuthUserId} onChange={set('doctorAuthUserId')}>
-              <option value="">Choose a doctor…</option>
-              {doctors.map(d => (
-                <option key={d.authUserId} value={d.authUserId}>
-                  Dr. {d.firstName} {d.lastName} — {d.specialization}
-                </option>
-              ))}
-            </select>
+            {doctors.length === 0 ? (
+              <div className="rounded-lg bg-yellow-50 border border-yellow-200 px-4 py-3 text-sm text-yellow-700">
+                No doctors are currently available for appointments. Please check back later.
+              </div>
+            ) : (
+              <select className="input" required value={form.doctorAuthUserId} onChange={set('doctorAuthUserId')}>
+                <option value="">Choose a doctor…</option>
+                {doctors.map(d => (
+                  <option key={d.authUserId} value={d.authUserId}>
+                    Dr. {d.firstName} {d.lastName} — {d.specialization}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

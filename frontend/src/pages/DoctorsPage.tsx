@@ -4,9 +4,15 @@ import { useAuthStore } from '../store/authStore';
 import { getAllDoctors, updateDoctor } from '../api/doctors';
 import { registerDoctor } from '../api/auth';
 import {
-  Search, Stethoscope, Phone, Mail, Plus, X, Loader2, Pencil, Clock,
+  Search, Stethoscope, Phone, Mail, Plus, X, Loader2, Pencil, Clock, CircleDot,
 } from 'lucide-react';
-import type { Doctor, RegisterDoctorRequest, DoctorUpdateRequest } from '../types';
+import type { Doctor, RegisterDoctorRequest, DoctorUpdateRequest, AvailabilityStatus } from '../types';
+
+const STATUS_CONFIG: Record<AvailabilityStatus, { label: string; classes: string }> = {
+  AVAILABLE:     { label: 'Available',     classes: 'bg-green-100 text-green-700' },
+  NOT_AVAILABLE: { label: 'Not Available', classes: 'bg-red-100 text-red-700' },
+  NOT_SET:       { label: 'Status Not Set', classes: 'bg-gray-100 text-gray-500' },
+};
 
 // Add Doctor Modal (Admin only) 
 function AddDoctorModal({ onClose }: { onClose: () => void }) {
@@ -85,8 +91,9 @@ function EditDoctorModal({ doctor, onClose }: { doctor: Doctor; onClose: () => v
     lastName:  doctor.lastName,
     email:     doctor.email,
     phone:     doctor.phone ?? '',
-    specialization: doctor.specialization ?? '',
-    availability:   doctor.availability ?? '',
+    specialization:    doctor.specialization ?? '',
+    availability:      doctor.availability ?? '',
+    availabilityStatus: doctor.availabilityStatus ?? 'NOT_SET',
     password: '',
   });
   const [error, setError] = useState('');
@@ -103,7 +110,7 @@ function EditDoctorModal({ doctor, onClose }: { doctor: Doctor; onClose: () => v
   });
 
   const set = (k: keyof DoctorUpdateRequest) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
       setForm(f => ({ ...f, [k]: e.target.value }));
 
   return (
@@ -152,8 +159,18 @@ function EditDoctorModal({ doctor, onClose }: { doctor: Doctor; onClose: () => v
               <input className="input" value={form.specialization ?? ''} onChange={set('specialization')} placeholder="Cardiology" />
             </div>
           </div>
+          {/* Availability status */}
           <div>
-            <label className="label">Availability (JSON)</label>
+            <label className="label">Availability Status</label>
+            <select className="input" value={form.availabilityStatus ?? 'NOT_SET'} onChange={set('availabilityStatus')}>
+              <option value="NOT_SET">Not Set</option>
+              <option value="AVAILABLE">Available</option>
+              <option value="NOT_AVAILABLE">Not Available</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="label">Schedule (JSON) <span className="text-gray-400 font-normal">(optional)</span></label>
             <textarea
               className="input resize-none font-mono text-xs" rows={3}
               value={form.availability ?? ''}
@@ -189,6 +206,8 @@ export default function DoctorsPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] = useState<Doctor | null>(null);
 
+  const qc = useQueryClient();
+
   const { data, isLoading } = useQuery({
     queryKey: ['doctors'],
     queryFn: () => getAllDoctors().then(r => r.data.data),
@@ -207,6 +226,12 @@ export default function DoctorsPage() {
 
   const canEdit = (doc: Doctor) =>
     isAdmin || (isDoctor && doc.email === user?.email);
+
+  const statusMutation = useMutation({
+    mutationFn: ({ authUserId, status }: { authUserId: number; status: string }) =>
+      updateDoctor(authUserId, { availabilityStatus: status as DoctorUpdateRequest['availabilityStatus'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['doctors'] }),
+  });
 
   return (
     <div className="p-6 space-y-6">
@@ -246,55 +271,82 @@ export default function DoctorsPage() {
         <div className="card text-center py-16 text-gray-400">No doctors found.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {doctors.map(doc => (
-            <div key={doc.id} className="card hover:shadow-md transition-shadow group">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4 flex-1 min-w-0">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 shrink-0">
-                    <Stethoscope size={22} className="text-primary-600" />
+          {doctors.map(doc => {
+            const status = doc.availabilityStatus ?? 'NOT_SET';
+            const cfg    = STATUS_CONFIG[status];
+            return (
+              <div key={doc.id} className="card hover:shadow-md transition-shadow group">
+                {/* Header row */}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-4 flex-1 min-w-0">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 shrink-0">
+                      <Stethoscope size={22} className="text-primary-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 truncate">
+                        Dr. {doc.firstName} {doc.lastName}
+                      </p>
+                      <span className="inline-block mt-1 text-xs font-medium text-primary-600 bg-primary-50 rounded-full px-2 py-0.5">
+                        {doc.specialization || 'General'}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 truncate">
-                      Dr. {doc.firstName} {doc.lastName}
-                    </p>
-                    <span className="inline-block mt-1 text-xs font-medium text-primary-600 bg-primary-50 rounded-full px-2 py-0.5">
-                      {doc.specialization || 'General'}
-                    </span>
-                  </div>
+                  {canEdit(doc) && (
+                    <button
+                      onClick={() => setEditTarget(doc)}
+                      className="opacity-0 group-hover:opacity-100 ml-2 p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-all"
+                      title="Edit profile"
+                    >
+                      <Pencil size={15} />
+                    </button>
+                  )}
                 </div>
-                {canEdit(doc) && (
-                  <button
-                    onClick={() => setEditTarget(doc)}
-                    className="opacity-0 group-hover:opacity-100 ml-2 p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-all"
-                    title="Edit"
-                  >
-                    <Pencil size={15} />
-                  </button>
-                )}
-              </div>
 
-              <div className="mt-4 space-y-1.5 text-sm text-gray-600">
-                {doc.email && (
-                  <div className="flex items-center gap-2">
-                    <Mail size={13} className="text-gray-400 shrink-0" />
-                    <span className="truncate">{doc.email}</span>
-                  </div>
-                )}
-                {doc.phone && (
-                  <div className="flex items-center gap-2">
-                    <Phone size={13} className="text-gray-400 shrink-0" />
-                    <span>{doc.phone}</span>
-                  </div>
-                )}
-                {doc.availability && (
-                  <div className="flex items-start gap-2 mt-2">
-                    <Clock size={13} className="text-gray-400 shrink-0 mt-0.5" />
-                    <span className="text-xs text-gray-400 font-mono truncate">{doc.availability}</span>
-                  </div>
-                )}
+                {/* Availability status row */}
+                <div className="mt-3">
+                  {canEdit(doc) ? (
+                    <select
+                      className={`w-full text-xs font-medium rounded-full px-3 py-1.5 border-0 cursor-pointer focus:ring-2 focus:ring-primary-500/30 focus:outline-none ${cfg.classes}`}
+                      value={status}
+                      disabled={statusMutation.isPending}
+                      onChange={e => statusMutation.mutate({ authUserId: doc.authUserId, status: e.target.value })}
+                    >
+                      <option value="NOT_SET">⬜ Status Not Set</option>
+                      <option value="AVAILABLE">🟢 Available</option>
+                      <option value="NOT_AVAILABLE">🔴 Not Available</option>
+                    </select>
+                  ) : (
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-full px-3 py-1 ${cfg.classes}`}>
+                      <CircleDot size={10} />
+                      {cfg.label}
+                    </span>
+                  )}
+                </div>
+
+                {/* Contact info */}
+                <div className="mt-3 space-y-1.5 text-sm text-gray-600 border-t border-gray-50 pt-3">
+                  {doc.email && (
+                    <div className="flex items-center gap-2">
+                      <Mail size={13} className="text-gray-400 shrink-0" />
+                      <span className="truncate">{doc.email}</span>
+                    </div>
+                  )}
+                  {doc.phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone size={13} className="text-gray-400 shrink-0" />
+                      <span>{doc.phone}</span>
+                    </div>
+                  )}
+                  {doc.availability && (
+                    <div className="flex items-start gap-2">
+                      <Clock size={13} className="text-gray-400 shrink-0 mt-0.5" />
+                      <span className="text-xs text-gray-400 font-mono truncate">{doc.availability}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

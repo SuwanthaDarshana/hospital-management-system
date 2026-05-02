@@ -38,6 +38,10 @@ public class DoctorRequestDTO {
             example = "{\"monday\": \"9:00-17:00\", \"tuesday\": \"9:00-17:00\"}")
     private String availability;
 
+    @Pattern(regexp = "^(NOT_SET|AVAILABLE|NOT_AVAILABLE)$", message = "availabilityStatus must be NOT_SET, AVAILABLE, or NOT_AVAILABLE")
+    @Schema(description = "Doctor's availability status", example = "AVAILABLE")
+    private String availabilityStatus;
+
     @Size(min = 6, message = "Password must be at least 6 characters")
     @Schema(description = "New password (leave blank to keep existing)", example = "securePassword123")
     private String password;

@@ -77,6 +77,7 @@ public class DoctorServiceImpl implements DoctorService {
             if (dto.getPhone() != null) doctor.setPhone(dto.getPhone());
             if (dto.getSpecialization() != null) doctor.setSpecialization(dto.getSpecialization());
             if (dto.getAvailability() != null) doctor.setAvailability(dto.getAvailability());
+            if (dto.getAvailabilityStatus() != null) doctor.setAvailabilityStatus(dto.getAvailabilityStatus());
             if (dto.getRole() != null) doctor.setRole(dto.getRole());
 
             event.setFirstName(dto.getFirstName());
@@ -90,6 +91,7 @@ public class DoctorServiceImpl implements DoctorService {
             if (dto.getPhone() != null) doctor.setPhone(dto.getPhone());
             if (dto.getSpecialization() != null) doctor.setSpecialization(dto.getSpecialization());
             if (dto.getAvailability() != null) doctor.setAvailability(dto.getAvailability());
+            if (dto.getAvailabilityStatus() != null) doctor.setAvailabilityStatus(dto.getAvailabilityStatus());
 
             event.setPhone(dto.getPhone());
             event.setSpecialization(dto.getSpecialization());
@@ -149,6 +151,7 @@ public class DoctorServiceImpl implements DoctorService {
                 .phone(doctor.getPhone())
                 .specialization(doctor.getSpecialization())
                 .availability(doctor.getAvailability())
+                .availabilityStatus(doctor.getAvailabilityStatus())
                 .build();
     }
 }

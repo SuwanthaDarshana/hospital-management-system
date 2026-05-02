@@ -34,14 +34,20 @@ public class Doctor {
     @Column(columnDefinition = "TEXT")
     private String availability;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private String availabilityStatus = "NOT_SET";
+
     private String role;
 
     @Column(nullable = false, unique = true)
     private Long authUserId;   // <-- Link to Auth Service User
 
 
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
 
 

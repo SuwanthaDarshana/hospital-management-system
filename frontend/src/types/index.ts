@@ -53,6 +53,8 @@ export interface RegisterStaffRequest {
   bloodGroup?: string;
 }
 
+export type AvailabilityStatus = 'NOT_SET' | 'AVAILABLE' | 'NOT_AVAILABLE';
+
 // matches DoctorResponseDTO exactly
 export interface Doctor {
   id: number;
@@ -63,6 +65,7 @@ export interface Doctor {
   email: string;
   phone: string;
   availability?: string;
+  availabilityStatus: AvailabilityStatus;
 }
 
 // fields a doctor can update (PUT /api/v1/doctors/{authUserId})
@@ -76,6 +79,7 @@ export interface DoctorUpdateRequest {
   phone?: string;
   specialization?: string;
   availability?: string;
+  availabilityStatus?: AvailabilityStatus;
   password?: string;
 }
 
