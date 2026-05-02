@@ -14,6 +14,39 @@ const STATUS_CONFIG: Record<AvailabilityStatus, { label: string; classes: string
   NOT_SET:       { label: 'Status Not Set', classes: 'bg-gray-100 text-gray-500' },
 };
 
+const SPECIALIZATIONS = [
+  'Anesthesiology',
+  'Cardiology',
+  'Dermatology',
+  'Emergency Medicine',
+  'Endocrinology',
+  'Family Medicine',
+  'Gastroenterology',
+  'General Practice',
+  'General Surgery',
+  'Gynecology',
+  'Hematology',
+  'Infectious Disease',
+  'Internal Medicine',
+  'Nephrology',
+  'Neurology',
+  'Neurosurgery',
+  'Obstetrics & Gynecology',
+  'Oncology',
+  'Ophthalmology',
+  'Orthopedics',
+  'Otolaryngology (ENT)',
+  'Pathology',
+  'Pediatrics',
+  'Physical Medicine',
+  'Psychiatry',
+  'Pulmonology',
+  'Radiology',
+  'Rheumatology',
+  'Urology',
+  'Vascular Surgery',
+];
+
 // Add Doctor Modal (Admin only) 
 function AddDoctorModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
@@ -29,7 +62,7 @@ function AddDoctorModal({ onClose }: { onClose: () => void }) {
   });
 
   const set = (k: keyof RegisterDoctorRequest) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [k]: e.target.value }));
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm(f => ({ ...f, [k]: e.target.value }));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
@@ -64,7 +97,10 @@ function AddDoctorModal({ onClose }: { onClose: () => void }) {
             </div>
             <div>
               <label className="label">Specialization *</label>
-              <input className="input" required value={form.specialization} onChange={set('specialization')} placeholder="Cardiology" />
+              <select className="input" required value={form.specialization} onChange={set('specialization')}>
+                <option value="">Select specialization…</option>
+                {SPECIALIZATIONS.map(s => <option key={s}>{s}</option>)}
+              </select>
             </div>
           </div>
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
@@ -156,7 +192,10 @@ function EditDoctorModal({ doctor, onClose }: { doctor: Doctor; onClose: () => v
             </div>
             <div>
               <label className="label">Specialization</label>
-              <input className="input" value={form.specialization ?? ''} onChange={set('specialization')} placeholder="Cardiology" />
+              <select className="input" value={form.specialization ?? ''} onChange={set('specialization')}>
+                <option value="">Select specialization…</option>
+                {SPECIALIZATIONS.map(s => <option key={s}>{s}</option>)}
+              </select>
             </div>
           </div>
           {/* Availability status */}

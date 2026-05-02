@@ -127,7 +127,7 @@ function DoctorProfile({ authUserId }: { authUserId: number }) {
   );
 
   const set = (k: keyof DoctorUpdateRequest) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
       setForm(f => ({ ...f, [k]: e.target.value }));
 
   const currentStatus: AvailStatus =
@@ -224,7 +224,17 @@ function DoctorProfile({ authUserId }: { authUserId: number }) {
             </div>
             <div>
               <label className="label">Specialization</label>
-              <input className="input" value={form.specialization ?? ''} onChange={set('specialization')} placeholder="Cardiology" />
+              <select className="input" value={form.specialization ?? ''} onChange={set('specialization')}>
+                <option value="">Select specialization…</option>
+                {['Anesthesiology','Cardiology','Dermatology','Emergency Medicine','Endocrinology',
+                  'Family Medicine','Gastroenterology','General Practice','General Surgery',
+                  'Gynecology','Hematology','Infectious Disease','Internal Medicine','Nephrology',
+                  'Neurology','Neurosurgery','Obstetrics & Gynecology','Oncology','Ophthalmology',
+                  'Orthopedics','Otolaryngology (ENT)','Pathology','Pediatrics',
+                  'Physical Medicine','Psychiatry','Pulmonology','Radiology','Rheumatology',
+                  'Urology','Vascular Surgery',
+                ].map(s => <option key={s}>{s}</option>)}
+              </select>
             </div>
           </div>
           <div>
