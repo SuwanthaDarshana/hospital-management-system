@@ -133,7 +133,7 @@ function AddStaffModal({ onClose }: { onClose: () => void }) {
 }
 
 // ─── Edit Staff Modal ────────────────────────────────────────────────────────
-function EditStaffModal({ staff, onClose }: { staff: Staff; onClose: () => void }) {
+function EditStaffModal({ staff, isAdmin, onClose }: { staff: Staff; isAdmin: boolean; onClose: () => void }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<StaffUpdateRequest>({
     firstName:   staff.firstName,
@@ -164,44 +164,72 @@ function EditStaffModal({ staff, onClose }: { staff: Staff; onClose: () => void 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 py-6">
       <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
-          <h3 className="text-base font-semibold text-gray-900">Edit {staff.firstName} {staff.lastName}</h3>
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">Edit {staff.firstName} {staff.lastName}</h3>
+            {!isAdmin && (
+              <p className="text-xs text-gray-400 mt-0.5">You can update your personal and contact details</p>
+            )}
+          </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
         </div>
         <form
           className="px-6 py-5 space-y-4 overflow-y-auto"
           onSubmit={e => { e.preventDefault(); setError(''); mutation.mutate(); }}
         >
+          {/* ── Admin-only fields ── */}
+          {isAdmin && (
+            <>
+              <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-700 font-medium">
+                Admin fields — changes sync to the auth service
+              </div>
+              <div>
+                <label className="label">Email</label>
+                <input className="input" type="email" value={form.email} onChange={set('email')} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label">Department</label>
+                  <select className="input" value={form.department ?? ''} onChange={set('department')}>
+                    <option value="">Select…</option>
+                    {DEPARTMENTS.map(d => <option key={d}>{d}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="label">Status</label>
+                  <select className="input" value={form.isActive ? 'true' : 'false'}
+                    onChange={e => setForm(f => ({ ...f, isActive: e.target.value === 'true' }))}>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                  </select>
+                </div>
+              </div>
+              <div className="border-t border-gray-100 pt-2" />
+            </>
+          )}
+
+          {/* ── Fields editable by admin and staff ── */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label">First name *</label>
+              <label className="label">First name</label>
               <input className="input" required value={form.firstName} onChange={set('firstName')} />
             </div>
             <div>
-              <label className="label">Last name *</label>
+              <label className="label">Last name</label>
               <input className="input" required value={form.lastName} onChange={set('lastName')} />
             </div>
           </div>
           <div>
-            <label className="label">Email *</label>
-            <input className="input" type="email" required value={form.email} onChange={set('email')} />
+            <label className="label">Phone</label>
+            <input className="input" value={form.phone ?? ''} onChange={set('phone')} placeholder="0771234567" />
+          </div>
+          <div>
+            <label className="label">Address</label>
+            <input className="input" value={form.address ?? ''} onChange={set('address')} placeholder="123 Main St, Colombo" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label">Phone</label>
-              <input className="input" value={form.phone ?? ''} onChange={set('phone')} placeholder="0771234567" />
-            </div>
-            <div>
-              <label className="label">Department</label>
-              <select className="input" value={form.department ?? ''} onChange={set('department')}>
-                <option value="">Select…</option>
-                {DEPARTMENTS.map(d => <option key={d}>{d}</option>)}
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="label">Gender *</label>
-              <select className="input" required value={form.gender} onChange={set('gender')}>
+              <label className="label">Gender</label>
+              <select className="input" value={form.gender ?? ''} onChange={set('gender')}>
                 <option value="">Select…</option>
                 <option>Male</option>
                 <option>Female</option>
@@ -209,22 +237,16 @@ function EditStaffModal({ staff, onClose }: { staff: Staff; onClose: () => void 
               </select>
             </div>
             <div>
-              <label className="label">Date of birth *</label>
-              <input className="input" type="date" required value={form.dateOfBirth} onChange={set('dateOfBirth')} />
+              <label className="label">Date of birth</label>
+              <input className="input" type="date" value={form.dateOfBirth ?? ''} onChange={set('dateOfBirth')} />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="label">Blood group</label>
-              <select className="input" value={form.bloodGroup ?? ''} onChange={set('bloodGroup')}>
-                <option value="">Select…</option>
-                {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(g => <option key={g}>{g}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="label">Address *</label>
-              <input className="input" required value={form.address} onChange={set('address')} />
-            </div>
+          <div>
+            <label className="label">Blood group</label>
+            <select className="input" value={form.bloodGroup ?? ''} onChange={set('bloodGroup')}>
+              <option value="">Select…</option>
+              {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(g => <option key={g}>{g}</option>)}
+            </select>
           </div>
 
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
@@ -272,7 +294,7 @@ export default function StaffPage() {
   return (
     <div className="p-6 space-y-6">
       {showAdd    && <AddStaffModal onClose={() => setShowAdd(false)} />}
-      {editTarget && <EditStaffModal staff={editTarget} onClose={() => setEditTarget(null)} />}
+      {editTarget && <EditStaffModal staff={editTarget} isAdmin={isAdmin} onClose={() => setEditTarget(null)} />}
 
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>

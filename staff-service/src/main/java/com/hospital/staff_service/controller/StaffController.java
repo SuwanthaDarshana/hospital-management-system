@@ -50,8 +50,10 @@ public class StaffController {
     @PutMapping("/{authUserId}")
     public ResponseEntity<StandardResponseDTO<StaffResponseDTO>> updateStaff(
             @PathVariable Long authUserId,
-            @Valid @RequestBody StaffRequestDTO dto) {
-        StaffResponseDTO updated = staffService.updateStaff(authUserId, dto);
+            @Valid @RequestBody StaffRequestDTO dto,
+            @RequestHeader("X-User-Email") String callerEmail,
+            @RequestHeader("X-User-Role")  String callerRole) {
+        StaffResponseDTO updated = staffService.updateStaff(authUserId, dto, callerEmail, callerRole);
         return ResponseEntity.ok(StandardResponseDTO.<StaffResponseDTO>builder()
                 .success(true)
                 .message("Staff updated successfully")

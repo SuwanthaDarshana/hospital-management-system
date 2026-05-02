@@ -44,56 +44,62 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     @Transactional
-    public StaffResponseDTO updateStaff(Long authUserId, StaffRequestDTO dto) {
-        // 1. Fetch existing record
+    public StaffResponseDTO updateStaff(Long authUserId, StaffRequestDTO dto, String callerEmail, String callerRole) {
         Staff staff = staffRepository.findByAuthUserId(authUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Staff member not found with Auth ID: " + authUserId));
 
-        // 2. Track email change for sync
-        boolean emailChanged = !staff.getEmail().equalsIgnoreCase(dto.getEmail());
+        boolean isAdmin = "ADMIN".equalsIgnoreCase(callerRole);
 
-        // 3. Update all fields
-        staff.setFirstName(dto.getFirstName());
-        staff.setLastName(dto.getLastName());
-        staff.setPhone(dto.getPhone());
-        staff.setDepartment(dto.getDepartment());
-        staff.setAddress(dto.getAddress());
-        staff.setGender(dto.getGender());
-        staff.setBloodGroup(dto.getBloodGroup());
-        staff.setDateOfBirth(dto.getDateOfBirth());
-        staff.setActive(dto.isActive());
-
-        if (emailChanged) {
-            staff.setEmail(dto.getEmail());
+        // Staff can only update their own profile
+        if (!isAdmin && !staff.getEmail().equalsIgnoreCase(callerEmail)) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "Access Denied: You can only update your own profile.");
         }
 
-        // Update role only if explicitly provided
-        if (dto.getRole() != null && !dto.getRole().isBlank()) {
-            staff.setRole(dto.getRole());
+        // ── Fields any staff member can update on their own profile ──
+        if (dto.getFirstName() != null) staff.setFirstName(dto.getFirstName());
+        if (dto.getLastName()  != null) staff.setLastName(dto.getLastName());
+        if (dto.getPhone()     != null) staff.setPhone(dto.getPhone());
+        if (dto.getAddress()   != null) staff.setAddress(dto.getAddress());
+        if (dto.getGender()    != null) staff.setGender(dto.getGender());
+        if (dto.getDateOfBirth() != null) staff.setDateOfBirth(dto.getDateOfBirth());
+        if (dto.getBloodGroup()  != null) staff.setBloodGroup(dto.getBloodGroup());
+
+        // ── Admin-only sensitive fields ──
+        boolean emailChanged = false;
+        boolean roleChanged  = false;
+
+        if (isAdmin) {
+            if (dto.getEmail() != null && !dto.getEmail().equalsIgnoreCase(staff.getEmail())) {
+                staff.setEmail(dto.getEmail());
+                emailChanged = true;
+            }
+            if (dto.getDepartment() != null) staff.setDepartment(dto.getDepartment());
+            if (dto.getRole() != null && !dto.getRole().isBlank()) {
+                staff.setRole(dto.getRole());
+                roleChanged = true;
+            }
+            staff.setActive(dto.isActive());
         }
 
-        // 4. Save to DB
-        Staff updatedStaff = staffRepository.save(staff);
+        Staff saved = staffRepository.save(staff);
 
-        // 5. Sync with Auth Service if email or role changed
-        boolean roleChanged = dto.getRole() != null && !dto.getRole().isBlank();
+        // Sync with Auth Service only when email / role / active status changed (admin actions)
         if (emailChanged || roleChanged) {
             StaffUpdatedEvent event = StaffUpdatedEvent.builder()
-                    .authUserId(updatedStaff.getAuthUserId())
-                    .email(updatedStaff.getEmail())
-                    .role(updatedStaff.getRole())
-                    .isActive(updatedStaff.isActive())
+                    .authUserId(saved.getAuthUserId())
+                    .email(saved.getEmail())
+                    .role(saved.getRole())
+                    .isActive(saved.isActive())
                     .build();
-
             rabbitTemplate.convertAndSend(
                     RabbitConfig.STAFF_UPDATE_EXCHANGE,
                     RabbitConfig.STAFF_UPDATE_ROUTING_KEY,
-                    event
-            );
-            log.info("Sync event sent to Auth Service for staff: {}", updatedStaff.getEmail());
+                    event);
+            log.info("Auth sync event sent for staff: {}", saved.getEmail());
         }
 
-        return mapToResponseDTO(updatedStaff);
+        return mapToResponseDTO(saved);
     }
 
     @Override
