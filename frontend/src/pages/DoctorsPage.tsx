@@ -303,23 +303,25 @@ export default function DoctorsPage() {
                 </div>
 
                 {/* Availability status row */}
-                <div className="mt-3">
-                  {canEdit(doc) ? (
+                <div className="mt-3 flex items-center gap-2">
+                  {/* Coloured badge — always visible */}
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-full px-2.5 py-1 shrink-0 ${cfg.classes}`}>
+                    <CircleDot size={10} />
+                    {cfg.label}
+                  </span>
+
+                  {/* Editable select — only for admin / own profile */}
+                  {canEdit(doc) && (
                     <select
-                      className={`w-full text-xs font-medium rounded-full px-3 py-1.5 border-0 cursor-pointer focus:ring-2 focus:ring-primary-500/30 focus:outline-none ${cfg.classes}`}
+                      className="input text-xs py-1 flex-1"
                       value={status}
                       disabled={statusMutation.isPending}
                       onChange={e => statusMutation.mutate({ authUserId: doc.authUserId, status: e.target.value })}
                     >
-                      <option value="NOT_SET">⬜ Status Not Set</option>
-                      <option value="AVAILABLE">🟢 Available</option>
-                      <option value="NOT_AVAILABLE">🔴 Not Available</option>
+                      <option value="NOT_SET">Not Set</option>
+                      <option value="AVAILABLE">Available</option>
+                      <option value="NOT_AVAILABLE">Not Available</option>
                     </select>
-                  ) : (
-                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-full px-3 py-1 ${cfg.classes}`}>
-                      <CircleDot size={10} />
-                      {cfg.label}
-                    </span>
                   )}
                 </div>
 
