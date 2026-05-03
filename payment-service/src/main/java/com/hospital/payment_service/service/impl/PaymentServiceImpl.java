@@ -125,6 +125,14 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    public List<PaymentResponseDTO> getAllPayments() {
+        return paymentRepository.findAll().stream()
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .map(this::toDTO)
+                .toList();
+    }
+
+    @Override
     public List<PaymentResponseDTO> getPaymentsByAppointment(Long appointmentId) {
         return paymentRepository.findByAppointmentId(appointmentId).stream()
                 .map(this::toDTO)

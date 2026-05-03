@@ -74,6 +74,17 @@ public class PaymentController {
                         .build());
     }
 
+    @Operation(summary = "Get all payments (admin)", description = "Returns all payments across all patients. Admin only.")
+    @GetMapping
+    public ResponseEntity<StandardResponseDTO<List<PaymentResponseDTO>>> getAll() {
+        return ResponseEntity.ok(
+                StandardResponseDTO.<List<PaymentResponseDTO>>builder()
+                        .success(true)
+                        .message("Payments retrieved")
+                        .data(paymentService.getAllPayments())
+                        .build());
+    }
+
     @Operation(summary = "Get payment by ID")
     @GetMapping("/{id}")
     public ResponseEntity<StandardResponseDTO<PaymentResponseDTO>> getById(@PathVariable Long id) {

@@ -11,6 +11,7 @@ public interface PaymentService {
     PaymentResponseDTO confirmPayment(PaymentConfirmDTO dto);
     PaymentResponseDTO refundPayment(Long paymentId);
     PaymentResponseDTO getPaymentById(Long id);
+    List<PaymentResponseDTO> getAllPayments();
     List<PaymentResponseDTO> getPaymentsByAppointment(Long appointmentId);
     List<PaymentResponseDTO> getPaymentsByPatient(Long patientId);
 }
