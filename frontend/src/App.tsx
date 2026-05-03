@@ -12,6 +12,7 @@ import DoctorsPage from './pages/DoctorsPage';
 import PatientsPage from './pages/PatientsPage';
 import AppointmentsPage from './pages/AppointmentsPage';
 import PaymentsPage from './pages/PaymentsPage';
+import BillingPage from './pages/BillingPage';
 import StaffPage from './pages/StaffPage';
 import ProfilePage from './pages/ProfilePage';
 
@@ -44,6 +45,11 @@ export default function App() {
             <Route path="/patients" element={
               <ProtectedRoute allowedRoles={['ADMIN', 'STAFF', 'DOCTOR']}>
                 <PatientsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/billing" element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <BillingPage />
               </ProtectedRoute>
             } />
             <Route path="/staff" element={

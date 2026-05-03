@@ -78,6 +78,22 @@ spring:
           filters:
             - name: JwtFilter
 
+        # ── Payment Service (JWT required) ──
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/v1/payments, /api/v1/payments/**
+          filters:
+            - name: JwtFilter
+
+        # ── Notification Service (internal — no JWT, not exposed publicly) ──
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/v1/notifications/**
+          filters:
+            - name: JwtFilter
+
 jwt:
   secret: ${JWT_SECRET}
 
