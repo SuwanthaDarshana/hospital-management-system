@@ -11,7 +11,7 @@ import type { Doctor, RegisterDoctorRequest, DoctorUpdateRequest, AvailabilitySt
 const STATUS_CONFIG: Record<AvailabilityStatus, { label: string; classes: string }> = {
   AVAILABLE:     { label: 'Available',     classes: 'bg-green-100 text-green-700' },
   NOT_AVAILABLE: { label: 'Not Available', classes: 'bg-red-100 text-red-700' },
-  NOT_SET:       { label: 'Status Not Set', classes: 'bg-gray-100 text-gray-500' },
+  NOT_SET:       { label: 'Unavailable',   classes: 'bg-gray-100 text-gray-500' },
 };
 
 const SPECIALIZATIONS = [
@@ -129,7 +129,7 @@ function EditDoctorModal({ doctor, onClose }: { doctor: Doctor; onClose: () => v
     phone:     doctor.phone ?? '',
     specialization:    doctor.specialization ?? '',
     availability:      doctor.availability ?? '',
-    availabilityStatus: doctor.availabilityStatus ?? 'NOT_SET',
+    availabilityStatus: doctor.availabilityStatus ?? 'NOT_AVAILABLE',
     password: '',
   });
   const [error, setError] = useState('');
@@ -201,10 +201,9 @@ function EditDoctorModal({ doctor, onClose }: { doctor: Doctor; onClose: () => v
           {/* Availability status */}
           <div>
             <label className="label">Availability Status</label>
-            <select className="input" value={form.availabilityStatus ?? 'NOT_SET'} onChange={set('availabilityStatus')}>
-              <option value="NOT_SET">Not Set</option>
-              <option value="AVAILABLE">Available</option>
+            <select className="input" value={form.availabilityStatus ?? 'NOT_AVAILABLE'} onChange={set('availabilityStatus')}>
               <option value="NOT_AVAILABLE">Not Available</option>
+              <option value="AVAILABLE">Available</option>
             </select>
           </div>
 
@@ -326,7 +325,7 @@ export default function DoctorsPage() {
             const status: AvailabilityStatus =
               doc.availabilityStatus && STATUS_CONFIG[doc.availabilityStatus]
                 ? doc.availabilityStatus
-                : 'NOT_SET';
+                : 'NOT_AVAILABLE';
             const cfg = STATUS_CONFIG[status];
             return (
               <div key={doc.id} className="card hover:shadow-md transition-shadow group">
@@ -377,9 +376,9 @@ export default function DoctorsPage() {
                         disabled={statusMutation.isPending}
                         onChange={e => statusMutation.mutate({ authUserId: doc.authUserId, status: e.target.value })}
                       >
-                        <option value="NOT_SET">— Not Set —</option>
-                        <option value="AVAILABLE">✅ Available</option>
-                        <option value="NOT_AVAILABLE">🔴 Not Available</option>
+                        {/* <option value="NOT_SET">Unavailable</option> */}
+                        <option value="AVAILABLE">Available</option>
+                        <option value="NOT_AVAILABLE">Not Available</option>
                       </select>
                       {statusMutation.isPending && (
                         <p className="text-xs text-gray-400">Saving…</p>

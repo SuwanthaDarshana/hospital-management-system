@@ -34,7 +34,7 @@ public class DoctorEventListener {
                 .phone(event.getPhone())
                 .specialization(event.getSpecialization())
                 .role(event.getRole())
-                .availabilityStatus("NOT_SET")
+                .availabilityStatus("NOT_AVAILABLE")
                 .build();
 
         try {

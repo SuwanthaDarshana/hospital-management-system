@@ -36,11 +36,11 @@ public class Doctor {
     private String availability;
 
     @Builder.Default
-    private String availabilityStatus = "NOT_SET";
+    private String availabilityStatus = "NOT_AVAILABLE";
 
     @PostLoad
     private void fillDefaults() {
-        if (availabilityStatus == null) availabilityStatus = "NOT_SET";
+        if (availabilityStatus == null) availabilityStatus = "NOT_AVAILABLE";
     }
 
     private String role;

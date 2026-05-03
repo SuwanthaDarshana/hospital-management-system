@@ -13,7 +13,7 @@ type AvailStatus = 'NOT_SET' | 'AVAILABLE' | 'NOT_AVAILABLE';
 const AVAIL_CFG: Record<AvailStatus, { label: string; dot: string; badge: string }> = {
   AVAILABLE:     { label: 'Available for appointments', dot: 'text-green-500',  badge: 'bg-green-100 text-green-700' },
   NOT_AVAILABLE: { label: 'Not Available',              dot: 'text-red-500',    badge: 'bg-red-100 text-red-700' },
-  NOT_SET:       { label: 'Status not set',             dot: 'text-gray-400',   badge: 'bg-gray-100 text-gray-500' },
+  NOT_SET:       { label: 'Unavailable',                 dot: 'text-gray-400',   badge: 'bg-gray-100 text-gray-500' },
 };
 import type { Staff, StaffUpdateRequest, StandardResponse, DoctorUpdateRequest, PatientUpdateRequest } from '../types';
 
@@ -133,7 +133,7 @@ function DoctorProfile({ authUserId }: { authUserId: number }) {
   const currentStatus: AvailStatus =
     doctor?.availabilityStatus && AVAIL_CFG[doctor.availabilityStatus as AvailStatus]
       ? (doctor.availabilityStatus as AvailStatus)
-      : 'NOT_SET';
+      : 'NOT_AVAILABLE';
   const cfg = AVAIL_CFG[currentStatus];
 
   return (
@@ -184,9 +184,9 @@ function DoctorProfile({ authUserId }: { authUserId: number }) {
             disabled={availMutation.isPending}
             onChange={e => availMutation.mutate(e.target.value)}
           >
-            <option value="NOT_SET">— Not Set —</option>
-            <option value="AVAILABLE">✅ Available for appointments</option>
-            <option value="NOT_AVAILABLE">🔴 Not Available</option>
+            <option value="NOT_SET">Unavailable</option>
+            <option value="AVAILABLE">Available</option>
+            <option value="NOT_AVAILABLE">Not Available</option>
           </select>
           {availMutation.isPending && (
             <p className="text-xs text-gray-400 flex items-center gap-1">
