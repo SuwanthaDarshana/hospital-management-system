@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
 import { getPaymentsByPatient, createPaymentIntent, confirmPayment } from '../api/payments';
 import { getMyAppointments } from '../api/appointments';
@@ -170,7 +170,6 @@ function PayModal({
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function PaymentsPage() {
   const { user } = useAuthStore();
-  const qc = useQueryClient();
   const [payingAppointment, setPayingAppointment] = useState<Appointment | null>(null);
 
   const { data: payments = [], isLoading } = useQuery({

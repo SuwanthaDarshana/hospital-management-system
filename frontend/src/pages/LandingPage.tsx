@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import {
-  Heart, Shield, Clock, Users, Star, Phone, Mail, MapPin,
+  Heart, Shield, Users, Star, Phone, Mail, MapPin,
   ChevronRight, Activity, Stethoscope, Calendar, Award,
   CheckCircle, ArrowRight, Menu, X,
 } from 'lucide-react';

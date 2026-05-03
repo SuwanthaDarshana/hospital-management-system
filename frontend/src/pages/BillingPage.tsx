@@ -6,7 +6,7 @@ import {
   DollarSign, CreditCard, CheckCircle2, Clock,
   XCircle, RefreshCw, Search, TrendingUp, Receipt,
 } from 'lucide-react';
-import type { Payment, PaymentStatus } from '../types';
+import type { Payment } from '../types';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
