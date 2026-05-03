@@ -104,7 +104,12 @@ function DoctorProfile({ authUserId }: { authUserId: number }) {
 
   // General profile update
   const mutation = useMutation({
-    mutationFn: () => updateDoctor(authUserId, { ...form, ...(pendingPw ? { password: pendingPw } : {}) }),
+    mutationFn: () => {
+      const payload: DoctorUpdateRequest = { ...form, ...(pendingPw ? { password: pendingPw } : {}) };
+      if (!payload.phone)        delete payload.phone;
+      if (!payload.availability) delete payload.availability;
+      return updateDoctor(authUserId, payload);
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['my-doctor', authUserId] }); setEditing(false); },
     onError: (err: any) => setError(err.response?.data?.message || 'Update failed.'),
   });
@@ -184,7 +189,7 @@ function DoctorProfile({ authUserId }: { authUserId: number }) {
             disabled={availMutation.isPending}
             onChange={e => availMutation.mutate(e.target.value)}
           >
-            <option value="NOT_SET">Unavailable</option>
+            {/* <option value="NOT_SET">Unavailable</option> */}
             <option value="AVAILABLE">Available</option>
             <option value="NOT_AVAILABLE">Not Available</option>
           </select>

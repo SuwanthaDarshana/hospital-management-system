@@ -136,9 +136,13 @@ function EditDoctorModal({ doctor, onClose }: { doctor: Doctor; onClose: () => v
 
   const mutation = useMutation({
     mutationFn: () => {
-      // Only send non-empty password
       const payload: DoctorUpdateRequest = { ...form };
-      if (!payload.password) delete payload.password;
+      // Strip empty strings so they don't trigger backend @Pattern / @Size validation
+      if (!payload.password)     delete payload.password;
+      if (!payload.phone)        delete payload.phone;
+      if (!payload.firstName)    delete payload.firstName;
+      if (!payload.lastName)     delete payload.lastName;
+      if (!payload.availability) delete payload.availability;
       return updateDoctor(doctor.authUserId, payload);
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['doctors'] }); onClose(); },

@@ -11,11 +11,11 @@ import lombok.*;
 public class DoctorRequestDTO {
 
     // Admin-only fields
-    @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
+    @Size(max = 50, message = "First name must not exceed 50 characters")
     @Schema(description = "Doctor's first name", example = "John")
     private String firstName;
 
-    @Size(min = 2, max = 50, message = "Last name must be between 2 and 50 characters")
+    @Size(max = 50, message = "Last name must not exceed 50 characters")
     @Schema(description = "Doctor's last name", example = "Doe")
     private String lastName;
 
@@ -27,7 +27,7 @@ public class DoctorRequestDTO {
     private String role;
 
     // Admin & Doctor fields
-    @Pattern(regexp = "^\\+?[0-9]{10}$", message = "Phone number must be valid (10 digits)")
+    @Pattern(regexp = "^(\\+?[0-9]{7,15})?$", message = "Phone number must be 7–15 digits, optionally starting with +")
     @Schema(description = "Doctor's phone number", example = "0770000000")
     private String phone;
 
