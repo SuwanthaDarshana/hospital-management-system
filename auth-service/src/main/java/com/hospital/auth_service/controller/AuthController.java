@@ -2,6 +2,7 @@ package com.hospital.auth_service.controller;
 
 import com.hospital.auth_service.dto.*;
 import com.hospital.auth_service.service.AuthService;
+import com.hospital.auth_service.service.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
         private final AuthService authService;
+        private final PasswordResetService passwordResetService;
 
         // ── Register Patient ──────────────────────────────────────────────────────
 
@@ -139,6 +141,46 @@ public class AuthController {
                                 StandardResponseDTO.<Void>builder()
                                                 .success(true)
                                                 .message("Logged out successfully")
+                                                .build());
+        }
+
+        // ── Forgot Password ───────────────────────────────────────────────────────
+
+        @Operation(summary = "Request password reset",
+                   description = "Sends a password reset link to the provided email if an account exists.")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Reset link sent if email exists"),
+                        @ApiResponse(responseCode = "400", description = "Validation error")
+        })
+        @PostMapping("/forgot-password")
+        public ResponseEntity<StandardResponseDTO<Void>> forgotPassword(
+                        @Valid @RequestBody ForgotPasswordRequestDTO dto) {
+                log.info("POST /forgot-password called for email: {}", dto.getEmail());
+                passwordResetService.forgotPassword(dto);
+                return ResponseEntity.ok(
+                                StandardResponseDTO.<Void>builder()
+                                                .success(true)
+                                                .message("If an account with that email exists, a reset link has been sent.")
+                                                .build());
+        }
+
+        // ── Reset Password ────────────────────────────────────────────────────────
+
+        @Operation(summary = "Reset password",
+                   description = "Resets the user's password using a valid reset token.")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Password reset successfully"),
+                        @ApiResponse(responseCode = "400", description = "Invalid or expired token")
+        })
+        @PostMapping("/reset-password")
+        public ResponseEntity<StandardResponseDTO<Void>> resetPassword(
+                        @Valid @RequestBody ResetPasswordRequestDTO dto) {
+                log.info("POST /reset-password called");
+                passwordResetService.resetPassword(dto);
+                return ResponseEntity.ok(
+                                StandardResponseDTO.<Void>builder()
+                                                .success(true)
+                                                .message("Password reset successfully")
                                                 .build());
         }
 }

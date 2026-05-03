@@ -25,6 +25,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/refresh").permitAll()
                         .requestMatchers("/api/v1/auth/logout").permitAll()
                         .requestMatchers("/api/v1/auth/register/patient").permitAll()
+                        .requestMatchers("/api/v1/auth/forgot-password").permitAll()
+                        .requestMatchers("/api/v1/auth/reset-password").permitAll()
                         .requestMatchers("/api/v1/auth/register/doctor").hasRole("ADMIN")
                         .requestMatchers("/api/v1/auth/register/staff").hasRole("ADMIN")
                         // Swagger / OpenAPI endpoints

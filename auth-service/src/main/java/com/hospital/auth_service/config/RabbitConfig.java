@@ -46,6 +46,12 @@ public class RabbitConfig {
     public static final String STAFF_UPDATE_EXCHANGE = "staff.update.exchange";
     public static final String STAFF_UPDATE_ROUTING_KEY = "staff.updated";
 
+    // ================= AUTH → NOTIFICATION =================
+    // Password reset event
+    public static final String PASSWORD_RESET_QUEUE = "password.reset.queue";
+    public static final String PASSWORD_RESET_EXCHANGE = "password.reset.exchange";
+    public static final String PASSWORD_RESET_ROUTING_KEY = "password.reset";
+
 
 
 
@@ -170,6 +176,25 @@ public class RabbitConfig {
 
 
 
+
+    // ---------- Password Reset Queue (Auth → Notification) ----------
+    @Bean
+    public Queue passwordResetQueue() {
+        return new Queue(PASSWORD_RESET_QUEUE, true);
+    }
+
+    @Bean
+    public TopicExchange passwordResetExchange() {
+        return new TopicExchange(PASSWORD_RESET_EXCHANGE);
+    }
+
+    @Bean
+    public Binding passwordResetBinding() {
+        return BindingBuilder
+                .bind(passwordResetQueue())
+                .to(passwordResetExchange())
+                .with(PASSWORD_RESET_ROUTING_KEY);
+    }
 
     // JSON serialization
     @Bean

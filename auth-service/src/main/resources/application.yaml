@@ -49,3 +49,7 @@ springdoc:
     path: /swagger-ui.html
     operations-sorter: alpha
     tags-sorter: alpha
+
+password-reset:
+  token-expiry-minutes: 15
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
