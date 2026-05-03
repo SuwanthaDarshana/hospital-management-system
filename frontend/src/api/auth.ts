@@ -18,3 +18,9 @@ export const registerStaff = (data: RegisterStaffRequest) =>
 
 export const logout = (refreshToken: string) =>
   apiClient.post('/api/v1/auth/logout', { refreshToken });
+
+export const forgotPassword = (email: string) =>
+  apiClient.post('/api/v1/auth/forgot-password', { email });
+
+export const resetPassword = (token: string, newPassword: string) =>
+  apiClient.post('/api/v1/auth/reset-password', { token, newPassword });

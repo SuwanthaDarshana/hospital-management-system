@@ -6,6 +6,7 @@ import { registerStaff } from '../api/auth';
 import { Users, Search, Trash2, Plus, X, Loader2, Pencil } from 'lucide-react';
 import type { Staff, RegisterStaffRequest, StaffUpdateRequest, StandardResponse } from '../types';
 import clsx from 'clsx';
+import ConfirmModal from '../components/ConfirmModal';
 
 const getStaff = () =>
   apiClient.get<StandardResponse<Staff[]>>('/api/v1/staff').then(r => r.data.data);
@@ -270,6 +271,7 @@ export default function StaffPage() {
   const [search, setSearch] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] = useState<Staff | null>(null);
+  const [confirmDeactivate, setConfirmDeactivate] = useState<number | null>(null);
 
   const { data, isLoading } = useQuery({ queryKey: ['staff'], queryFn: getStaff });
 
@@ -295,6 +297,15 @@ export default function StaffPage() {
     <div className="p-6 space-y-6">
       {showAdd    && <AddStaffModal onClose={() => setShowAdd(false)} />}
       {editTarget && <EditStaffModal staff={editTarget} isAdmin={isAdmin} onClose={() => setEditTarget(null)} />}
+      {confirmDeactivate !== null && (
+        <ConfirmModal
+          title="Deactivate Staff Member"
+          message="Are you sure you want to deactivate this staff member? They will lose access to the system."
+          confirmLabel="Deactivate"
+          onConfirm={() => { deleteMutation.mutate(confirmDeactivate); setConfirmDeactivate(null); }}
+          onCancel={() => setConfirmDeactivate(null)}
+        />
+      )}
 
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -368,7 +379,7 @@ export default function StaffPage() {
                       )}
                       {isAdmin && (
                         <button
-                          onClick={() => window.confirm('Deactivate this staff member?') && deleteMutation.mutate(s.authUserId)}
+                          onClick={() => setConfirmDeactivate(s.authUserId)}
                           className="p-1.5 rounded text-gray-400 hover:text-red-500 transition-colors"
                           title="Deactivate"
                         >

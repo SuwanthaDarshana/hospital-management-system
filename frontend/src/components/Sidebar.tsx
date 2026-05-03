@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/authStore';
 import { logout as logoutApi } from '../api/auth';
 import {
   LayoutDashboard, Users, UserRound, CalendarDays, Stethoscope,
-  LogOut, Hospital, UserCog, X,
+  LogOut, Hospital, UserCog, X, CreditCard,
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -14,6 +14,7 @@ const navItems: NavItem[] = [
   { to: '/doctors',      label: 'Doctors',      icon: <Stethoscope size={18} />,     roles: ['ADMIN','STAFF','PATIENT','DOCTOR'] },
   { to: '/patients',     label: 'Patients',     icon: <UserRound size={18} />,       roles: ['ADMIN','STAFF','DOCTOR'] },
   { to: '/appointments', label: 'Appointments', icon: <CalendarDays size={18} />,    roles: ['ADMIN','STAFF','DOCTOR','PATIENT'] },
+  { to: '/payments',     label: 'Payments',     icon: <CreditCard size={18} />,      roles: ['PATIENT'] },
   { to: '/staff',        label: 'Staff',        icon: <Users size={18} />,           roles: ['ADMIN'] },
   { to: '/profile',      label: 'My Profile',   icon: <UserCog size={18} />,         roles: ['ADMIN','DOCTOR','PATIENT','STAFF'] },
 ];

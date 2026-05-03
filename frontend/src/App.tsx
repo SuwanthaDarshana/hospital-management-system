@@ -5,10 +5,13 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import DoctorsPage from './pages/DoctorsPage';
 import PatientsPage from './pages/PatientsPage';
 import AppointmentsPage from './pages/AppointmentsPage';
+import PaymentsPage from './pages/PaymentsPage';
 import StaffPage from './pages/StaffPage';
 import ProfilePage from './pages/ProfilePage';
 
@@ -24,12 +27,19 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route path="/dashboard"    element={<DashboardPage />} />
             <Route path="/doctors"      element={<DoctorsPage />} />
             <Route path="/appointments" element={<AppointmentsPage />} />
             <Route path="/profile"      element={<ProfilePage />} />
+            <Route path="/payments" element={
+              <ProtectedRoute allowedRoles={['PATIENT']}>
+                <PaymentsPage />
+              </ProtectedRoute>
+            } />
 
             <Route path="/patients" element={
               <ProtectedRoute allowedRoles={['ADMIN', 'STAFF', 'DOCTOR']}>

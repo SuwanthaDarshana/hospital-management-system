@@ -181,3 +181,32 @@ export interface StandardResponse<T> {
   message: string;
   data: T;
 }
+
+export type PaymentStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
+
+export interface Payment {
+  id: number;
+  appointmentId: number;
+  patientId: number;
+  patientEmail: string;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  stripePaymentIntentId: string;
+  clientSecret: string;
+  description?: string;
+  createdAt: string;
+}
+
+export interface PaymentRequest {
+  appointmentId: number;
+  patientId: number;
+  patientEmail: string;
+  amount: number;
+  currency: string;
+  description?: string;
+}
+
+export interface PaymentConfirmRequest {
+  paymentIntentId: string;
+}

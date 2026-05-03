@@ -6,9 +6,11 @@ import { getAppointmentsByDoctor } from '../api/appointments';
 import { Search, UserRound, Trash2, Phone } from 'lucide-react';
 import type { Patient } from '../types';
 import clsx from 'clsx';
+import ConfirmModal from '../components/ConfirmModal';
 
 export default function PatientsPage() {
   const [search, setSearch] = useState('');
+  const [confirmDeactivate, setConfirmDeactivate] = useState<number | null>(null);
   const qc = useQueryClient();
   const { user } = useAuthStore();
   const isDoctor = user?.role === 'DOCTOR';
@@ -63,6 +65,15 @@ export default function PatientsPage() {
 
   return (
     <div className="p-6 space-y-6">
+      {confirmDeactivate !== null && (
+        <ConfirmModal
+          title="Deactivate Patient"
+          message="Are you sure you want to deactivate this patient? They will no longer be able to access the system."
+          confirmLabel="Deactivate"
+          onConfirm={() => { deleteMutation.mutate(confirmDeactivate); setConfirmDeactivate(null); }}
+          onCancel={() => setConfirmDeactivate(null)}
+        />
+      )}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">{isDoctor ? 'My Patients' : 'Patients'}</h1>
         <p className="text-sm text-gray-500 mt-0.5">
@@ -128,7 +139,7 @@ export default function PatientsPage() {
                   {!isDoctor && (
                     <td className="td">
                       <button
-                        onClick={() => window.confirm('Deactivate this patient?') && deleteMutation.mutate(p.authUserId)}
+                        onClick={() => setConfirmDeactivate(p.authUserId)}
                         className="text-gray-400 hover:text-red-500 transition-colors p-1 rounded"
                       >
                         <Trash2 size={15} />

@@ -7,7 +7,9 @@ import {
 } from '../api/appointments';
 import { getAllDoctors } from '../api/doctors';
 import StatusBadge from '../components/StatusBadge';
-import { Plus, CalendarDays, X, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import ConfirmModal from '../components/ConfirmModal';
+import { Plus, CalendarDays, X, Loader2, CheckCircle2, XCircle, CreditCard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Appointment, Doctor } from '../types';
 
@@ -123,7 +125,9 @@ function BookModal({ onClose }: { onClose: () => void }) {
 export default function AppointmentsPage() {
   const { user } = useAuthStore();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [showBook, setShowBook] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState<number | null>(null);
   const [filterStatus, setFilterStatus] = useState('ALL');
   const isAdminOrStaff = user?.role === 'ADMIN' || user?.role === 'STAFF';
   const isDoctor = user?.role === 'DOCTOR';
@@ -166,6 +170,15 @@ export default function AppointmentsPage() {
   return (
     <div className="p-6 space-y-6">
       {showBook && <BookModal onClose={() => setShowBook(false)} />}
+      {confirmCancel !== null && (
+        <ConfirmModal
+          title="Cancel Appointment"
+          message="Are you sure you want to cancel this appointment? This action cannot be undone."
+          confirmLabel="Yes, Cancel"
+          onConfirm={() => { cancelMutation.mutate(confirmCancel); setConfirmCancel(null); }}
+          onCancel={() => setConfirmCancel(null)}
+        />
+      )}
 
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -257,12 +270,22 @@ export default function AppointmentsPage() {
                             <CheckCircle2 size={16} />
                           </button>
                         )}
+                        {/* Patient can pay for CONFIRMED appointments */}
+                        {user?.role === 'PATIENT' && a.status === 'CONFIRMED' && (
+                          <button
+                            title="Pay Now"
+                            onClick={() => navigate('/payments')}
+                            className="p-1 text-primary-500 hover:text-primary-700 transition-colors"
+                          >
+                            <CreditCard size={16} />
+                          </button>
+                        )}
                         {/* Patient/Admin can cancel */}
                         {(user?.role === 'PATIENT' || user?.role === 'ADMIN') &&
                           (a.status === 'PENDING' || a.status === 'CONFIRMED') && (
                           <button
                             title="Cancel"
-                            onClick={() => window.confirm('Cancel this appointment?') && cancelMutation.mutate(a.id)}
+                            onClick={() => setConfirmCancel(a.id)}
                             className="p-1 text-red-400 hover:text-red-600 transition-colors"
                           >
                             <XCircle size={16} />
