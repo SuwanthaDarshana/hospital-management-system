@@ -132,19 +132,18 @@ export interface Staff {
   updatedAt?: string;
 }
 
-// matches StaffRequestDTO — all required fields must be present
 export interface StaffUpdateRequest {
   firstName: string;
   lastName: string;
   email: string;
-  phone?: string;
+  phone?: string | null;
   department?: string;
   role?: string;
   isActive?: boolean;
-  address: string;
-  gender: string;
-  dateOfBirth: string;
-  bloodGroup?: string;
+  address?: string | null;
+  gender?: string | null;
+  dateOfBirth?: string | null;
+  bloodGroup?: string | null;
 }
 
 export interface Appointment {

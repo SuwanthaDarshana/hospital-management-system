@@ -152,7 +152,17 @@ function EditStaffModal({ staff, isAdmin, onClose }: { staff: Staff; isAdmin: bo
   const [error, setError] = useState('');
 
   const mutation = useMutation({
-    mutationFn: () => updateStaff(staff.authUserId, form),
+    mutationFn: () => {
+      const payload: StaffUpdateRequest = {
+        ...form,
+        phone:       form.phone       || null,
+        address:     form.address     || null,
+        gender:      form.gender      || null,
+        dateOfBirth: form.dateOfBirth || null,
+        bloodGroup:  form.bloodGroup  || null,
+      };
+      return updateStaff(staff.authUserId, payload);
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['staff'] }); onClose(); },
     onError: (err: any) => setError(err.response?.data?.message || 'Update failed.'),
   });
@@ -345,17 +355,23 @@ export default function StaffPage() {
               {staff.length === 0 ? (
                 <tr><td colSpan={6} className="td text-center py-10 text-gray-400">No staff found.</td></tr>
               ) : staff.map(s => (
-                <tr key={s.id} className="hover:bg-gray-50 transition-colors group">
+                <tr key={s.id} className={clsx(
+                  'transition-colors group',
+                  s.isActive ? 'hover:bg-gray-50' : 'bg-red-50 hover:bg-red-100',
+                )}>
                   <td className="td">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 shrink-0">
-                        <Users size={15} className="text-gray-500" />
+                      <div className={clsx(
+                        'flex h-8 w-8 items-center justify-center rounded-full shrink-0',
+                        s.isActive ? 'bg-gray-100' : 'bg-red-100',
+                      )}>
+                        <Users size={15} className={s.isActive ? 'text-gray-500' : 'text-red-400'} />
                       </div>
-                      <p className="font-medium text-gray-900">{s.firstName} {s.lastName}</p>
+                      <p className={clsx('font-medium', s.isActive ? 'text-gray-900' : 'text-red-400 line-through')}>{s.firstName} {s.lastName}</p>
                     </div>
                   </td>
-                  <td className="td text-gray-500">{s.email}</td>
-                  <td className="td">{s.phone || '—'}</td>
+                  <td className={clsx('td', !s.isActive && 'text-red-300')}>{s.email}</td>
+                  <td className={clsx('td', !s.isActive && 'text-red-300')}>{s.phone || '—'}</td>
                   <td className="td">
                     <span className={clsx('badge', DEPT_COLORS[s.department] ?? 'bg-gray-100 text-gray-600')}>
                       {s.department || '—'}
