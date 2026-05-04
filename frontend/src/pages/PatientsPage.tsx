@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
-import { getAllPatients, getPatientByAuthUserId, deletePatient } from '../api/patients';
+import { getAllPatients, getPatientByAuthUserId, deletePatient, activatePatient } from '../api/patients';
 import { getAppointmentsByDoctor } from '../api/appointments';
-import { Search, UserRound, Trash2, Phone } from 'lucide-react';
+import { Search, UserRound, Trash2, Phone, RotateCcw } from 'lucide-react';
 import type { Patient } from '../types';
 import clsx from 'clsx';
 import ConfirmModal from '../components/ConfirmModal';
@@ -48,8 +48,15 @@ export default function PatientsPage() {
   const isLoading = isDoctor ? doctorLoading : allLoading;
   const rawPatients: Patient[] = (isDoctor ? doctorData : allData) ?? [];
 
+  const [confirmActivate, setConfirmActivate] = useState<number | null>(null);
+
   const deleteMutation = useMutation({
     mutationFn: (authUserId: number) => deletePatient(authUserId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),
+  });
+
+  const activateMutation = useMutation({
+    mutationFn: (authUserId: number) => activatePatient(authUserId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),
   });
 
@@ -72,6 +79,15 @@ export default function PatientsPage() {
           confirmLabel="Deactivate"
           onConfirm={() => { deleteMutation.mutate(confirmDeactivate); setConfirmDeactivate(null); }}
           onCancel={() => setConfirmDeactivate(null)}
+        />
+      )}
+      {confirmActivate !== null && (
+        <ConfirmModal
+          title="Reactivate Patient"
+          message="Are you sure you want to reactivate this patient? They will regain access to the system."
+          confirmLabel="Reactivate"
+          onConfirm={() => { activateMutation.mutate(confirmActivate); setConfirmActivate(null); }}
+          onCancel={() => setConfirmActivate(null)}
         />
       )}
       <div>
@@ -110,15 +126,21 @@ export default function PatientsPage() {
                   {isDoctor ? 'No confirmed patients yet.' : 'No patients found.'}
                 </td></tr>
               ) : patients.map(p => (
-                <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={p.id} className={clsx(
+                  'transition-colors',
+                  p.isActive ? 'hover:bg-gray-50' : 'bg-red-50 hover:bg-red-100',
+                )}>
                   <td className="td">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 shrink-0">
-                        <UserRound size={15} className="text-purple-600" />
+                      <div className={clsx(
+                        'flex h-8 w-8 items-center justify-center rounded-full shrink-0',
+                        p.isActive ? 'bg-purple-100' : 'bg-red-100',
+                      )}>
+                        <UserRound size={15} className={p.isActive ? 'text-purple-600' : 'text-red-400'} />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">{p.firstName} {p.lastName}</p>
-                        <p className="text-xs text-gray-400">{p.email}</p>
+                        <p className={clsx('font-medium', p.isActive ? 'text-gray-900' : 'text-red-400 line-through')}>{p.firstName} {p.lastName}</p>
+                        <p className={clsx('text-xs', p.isActive ? 'text-gray-400' : 'text-red-300')}>{p.email}</p>
                       </div>
                     </div>
                   </td>
@@ -138,12 +160,23 @@ export default function PatientsPage() {
                   </td>
                   {!isDoctor && (
                     <td className="td">
-                      <button
-                        onClick={() => setConfirmDeactivate(p.authUserId)}
-                        className="text-gray-400 hover:text-red-500 transition-colors p-1 rounded"
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                      {p.isActive ? (
+                        <button
+                          onClick={() => setConfirmDeactivate(p.authUserId)}
+                          className="p-1.5 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                          title="Deactivate patient"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmActivate(p.authUserId)}
+                          className="p-1.5 rounded text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                          title="Reactivate patient"
+                        >
+                          <RotateCcw size={15} />
+                        </button>
+                      )}
                     </td>
                   )}
                 </tr>
