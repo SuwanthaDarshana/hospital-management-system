@@ -145,15 +145,39 @@ public class PatientServiceImpl implements PatientService {
     @Override
     @Transactional
     public void deletePatient(Long authUserId) {
-        // Industry Practice: Use Soft Delete (is_active = false)
         Patient patient = patientRepository.findByAuthUserId(authUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found with authUserId: " + authUserId));
 
         patient.setActive(false);
         patientRepository.save(patient);
 
-        // Log for auditing
-        log.info("Patient record for authUserId {} has been deactivated (Soft Deleted).", authUserId);
+        rabbitTemplate.convertAndSend(
+                RabbitConfig.PATIENT_UPDATE_EXCHANGE,
+                RabbitConfig.PATIENT_UPDATE_ROUTING_KEY,
+                PatientUpdatedEvent.builder()
+                        .authUserId(authUserId)
+                        .isActive(false)
+                        .build());
+        log.info("Patient {} deactivated and auth sync event sent.", authUserId);
+    }
+
+    @Override
+    @Transactional
+    public void activatePatient(Long authUserId) {
+        Patient patient = patientRepository.findByAuthUserId(authUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with authUserId: " + authUserId));
+
+        patient.setActive(true);
+        patientRepository.save(patient);
+
+        rabbitTemplate.convertAndSend(
+                RabbitConfig.PATIENT_UPDATE_EXCHANGE,
+                RabbitConfig.PATIENT_UPDATE_ROUTING_KEY,
+                PatientUpdatedEvent.builder()
+                        .authUserId(authUserId)
+                        .isActive(true)
+                        .build());
+        log.info("Patient {} reactivated and auth sync event sent.", authUserId);
     }
 
     //Entity convert to ResponseDTO

@@ -72,4 +72,13 @@ public class PatientController {
                 .build());
     }
 
+    @PatchMapping("/{authUserId}/activate")
+    public ResponseEntity<StandardResponseDTO<Void>> activatePatient(@PathVariable Long authUserId) {
+        patientService.activatePatient(authUserId);
+        return ResponseEntity.ok(StandardResponseDTO.<Void>builder()
+                .success(true)
+                .message("Patient activated successfully")
+                .build());
+    }
+
 }

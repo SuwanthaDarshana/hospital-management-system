@@ -1,7 +1,6 @@
 package com.hospital.staff_service.service.impl;
 
 import com.hospital.staff_service.config.RabbitConfig;
-import com.hospital.staff_service.dto.StaffCreatedEvent;
 import com.hospital.staff_service.dto.StaffRequestDTO;
 import com.hospital.staff_service.dto.StaffResponseDTO;
 import com.hospital.staff_service.dto.StaffUpdatedEvent;
@@ -66,8 +65,9 @@ public class StaffServiceImpl implements StaffService {
         if (dto.getBloodGroup()  != null) staff.setBloodGroup(dto.getBloodGroup());
 
         // ── Admin-only sensitive fields ──
-        boolean emailChanged = false;
-        boolean roleChanged  = false;
+        boolean emailChanged  = false;
+        boolean roleChanged   = false;
+        boolean activeChanged = false;
 
         if (isAdmin) {
             if (dto.getEmail() != null && !dto.getEmail().equalsIgnoreCase(staff.getEmail())) {
@@ -79,13 +79,16 @@ public class StaffServiceImpl implements StaffService {
                 staff.setRole(dto.getRole());
                 roleChanged = true;
             }
+            if (dto.isActive() != staff.isActive()) {
+                activeChanged = true;
+            }
             staff.setActive(dto.isActive());
         }
 
         Staff saved = staffRepository.save(staff);
 
-        // Sync with Auth Service only when email / role / active status changed (admin actions)
-        if (emailChanged || roleChanged) {
+        // Sync with Auth Service when email / role / active status changed
+        if (emailChanged || roleChanged || activeChanged) {
             StaffUpdatedEvent event = StaffUpdatedEvent.builder()
                     .authUserId(saved.getAuthUserId())
                     .email(saved.getEmail())
@@ -152,6 +155,27 @@ public class StaffServiceImpl implements StaffService {
                 event
         );
         log.info("Staff member {} deactivated and sync event sent.", staff.getEmail());
+    }
+
+    @Override
+    @Transactional
+    public void activateStaff(Long authUserId) {
+        Staff staff = staffRepository.findByAuthUserId(authUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Staff not found with Auth ID: " + authUserId));
+
+        staff.setActive(true);
+        staffRepository.save(staff);
+
+        StaffUpdatedEvent event = StaffUpdatedEvent.builder()
+                .authUserId(staff.getAuthUserId())
+                .isActive(true)
+                .build();
+
+        rabbitTemplate.convertAndSend(
+                RabbitConfig.STAFF_UPDATE_EXCHANGE,
+                RabbitConfig.STAFF_UPDATE_ROUTING_KEY,
+                event);
+        log.info("Staff member {} activated and sync event sent.", staff.getEmail());
     }
 
     // ========================= MAPPER =========================

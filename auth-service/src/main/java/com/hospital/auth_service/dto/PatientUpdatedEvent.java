@@ -11,4 +11,5 @@ public class PatientUpdatedEvent {
     private Long authUserId;
     private String email;
     private String password;
+    private Boolean isActive;
 }

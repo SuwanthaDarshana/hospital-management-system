@@ -1,5 +1,6 @@
 package com.hospital.staff_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -35,6 +36,7 @@ public class StaffResponseDTO {
     private String gender;
     private LocalDate dateOfBirth;
     private String bloodGroup;
+    @JsonProperty("isActive")
     private boolean isActive;
 
     private LocalDateTime createdAt;

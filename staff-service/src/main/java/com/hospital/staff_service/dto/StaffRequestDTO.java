@@ -1,5 +1,6 @@
 package com.hospital.staff_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -30,7 +31,6 @@ public class StaffRequestDTO {
     @Schema(description = "Doctor's email address", example = "john.doe@hospital.com")
     private String email;
 
-    @Pattern(regexp = "^\\+?[0-9]{10}$", message = "Phone number must be valid (10 digits)")
     @Schema(description = "Doctor's phone number", example = "0770000000")
     private String phone;
 
@@ -40,18 +40,17 @@ public class StaffRequestDTO {
     @Schema(description = "Staff's role in the system", example = "STAFF")
     private String role;       // e.g STAFF
 
+    @JsonProperty("isActive")
+    @Builder.Default
     private boolean isActive = true;
 
-    @NotBlank(message = "Address is required")
     @Size(max = 255, message = "Address is too long")
     private String address;
 
-    @NotBlank(message = "Gender is required")
     @Pattern(regexp = "^(Male|Female|Other)$", message = "Gender must be Male, Female, or Other")
     private String gender;
 
-    @NotNull(message = "Date of birth is required")
-    @Past(message = "Date of birth must be in the past")   //future date not allowed
+    @Past(message = "Date of birth must be in the past")
     private LocalDate dateOfBirth;
 
     @Pattern(regexp = "^(A|B|AB|O)[+-]$", message = "Invalid blood group format (e.g., A+, O-)")

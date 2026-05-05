@@ -1,16 +1,15 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { getAllPatients, getPatientByAuthUserId, deletePatient, activatePatient } from '../api/patients';
 import { getAppointmentsByDoctor } from '../api/appointments';
-import { Search, UserRound, Trash2, Phone, RotateCcw } from 'lucide-react';
+import { Search, UserRound, Phone } from 'lucide-react';
 import type { Patient } from '../types';
 import clsx from 'clsx';
-import ConfirmModal from '../components/ConfirmModal';
+import ActiveToggle from '../components/ActiveToggle';
 
 export default function PatientsPage() {
   const [search, setSearch] = useState('');
-  const [confirmDeactivate, setConfirmDeactivate] = useState<number | null>(null);
   const qc = useQueryClient();
   const { user } = useAuthStore();
   const isDoctor = user?.role === 'DOCTOR';
@@ -25,7 +24,7 @@ export default function PatientsPage() {
   // DOCTOR — fetch appointments → deduplicate patient IDs → fetch each patient
   const { data: doctorData, isLoading: doctorLoading } = useQuery({
     queryKey: ['patients-for-doctor', user?.authUserId],
-    staleTime: 0,                // always refetch when navigating to this tab
+    staleTime: 0,
     queryFn: async () => {
       const appointments = await getAppointmentsByDoctor(user!.authUserId).then(r => r.data.data);
       const active = appointments.filter(
@@ -34,7 +33,6 @@ export default function PatientsPage() {
       const uniqueIds = [...new Set(active.map(a => a.patientAuthUserId))];
       if (uniqueIds.length === 0) return [];
 
-      // allSettled so one failed fetch doesn't hide all other patients
       const results = await Promise.allSettled(
         uniqueIds.map(id => getPatientByAuthUserId(id).then(r => r.data.data))
       );
@@ -48,8 +46,6 @@ export default function PatientsPage() {
   const isLoading = isDoctor ? doctorLoading : allLoading;
   const rawPatients: Patient[] = (isDoctor ? doctorData : allData) ?? [];
 
-  const [confirmActivate, setConfirmActivate] = useState<number | null>(null);
-
   const deleteMutation = useMutation({
     mutationFn: (authUserId: number) => deletePatient(authUserId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),
@@ -59,6 +55,8 @@ export default function PatientsPage() {
     mutationFn: (authUserId: number) => activatePatient(authUserId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),
   });
+
+  const isPending = deleteMutation.isPending || activateMutation.isPending;
 
   const patients = rawPatients.filter(p => {
     if (!search) return true;
@@ -72,24 +70,6 @@ export default function PatientsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      {confirmDeactivate !== null && (
-        <ConfirmModal
-          title="Deactivate Patient"
-          message="Are you sure you want to deactivate this patient? They will no longer be able to access the system."
-          confirmLabel="Deactivate"
-          onConfirm={() => { deleteMutation.mutate(confirmDeactivate); setConfirmDeactivate(null); }}
-          onCancel={() => setConfirmDeactivate(null)}
-        />
-      )}
-      {confirmActivate !== null && (
-        <ConfirmModal
-          title="Reactivate Patient"
-          message="Are you sure you want to reactivate this patient? They will regain access to the system."
-          confirmLabel="Reactivate"
-          onConfirm={() => { activateMutation.mutate(confirmActivate); setConfirmActivate(null); }}
-          onCancel={() => setConfirmActivate(null)}
-        />
-      )}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">{isDoctor ? 'My Patients' : 'Patients'}</h1>
         <p className="text-sm text-gray-500 mt-0.5">
@@ -97,7 +77,6 @@ export default function PatientsPage() {
         </p>
       </div>
 
-      {/* Search */}
       <div className="relative max-w-sm">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         <input className="input pl-9" placeholder="Search patients…" value={search} onChange={e => setSearch(e.target.value)} />
@@ -116,13 +95,12 @@ export default function PatientsPage() {
                 <th className="th">Contact</th>
                 <th className="th">Blood</th>
                 <th className="th">Gender</th>
-                <th className="th">Status</th>
-                {!isDoctor && <th className="th"></th>}
+                {!isDoctor && <th className="th">Active</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
               {patients.length === 0 ? (
-                <tr><td colSpan={isDoctor ? 5 : 6} className="td text-center py-10 text-gray-400">
+                <tr><td colSpan={isDoctor ? 4 : 5} className="td text-center py-10 text-gray-400">
                   {isDoctor ? 'No confirmed patients yet.' : 'No patients found.'}
                 </td></tr>
               ) : patients.map(p => (
@@ -153,30 +131,19 @@ export default function PatientsPage() {
                     <span className="badge bg-red-50 text-red-700">{p.bloodGroup || '—'}</span>
                   </td>
                   <td className="td">{p.gender || '—'}</td>
-                  <td className="td">
-                    <span className={clsx('badge', p.isActive ? 'badge-active' : 'badge-inactive')}>
-                      {p.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
                   {!isDoctor && (
                     <td className="td">
-                      {p.isActive ? (
-                        <button
-                          onClick={() => setConfirmDeactivate(p.authUserId)}
-                          className="p-1.5 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                          title="Deactivate patient"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => setConfirmActivate(p.authUserId)}
-                          className="p-1.5 rounded text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
-                          title="Reactivate patient"
-                        >
-                          <RotateCcw size={15} />
-                        </button>
-                      )}
+                      <ActiveToggle
+                        checked={p.isActive}
+                        disabled={isPending}
+                        onChange={() => {
+                          if (p.isActive) {
+                            deleteMutation.mutate(p.authUserId);
+                          } else {
+                            activateMutation.mutate(p.authUserId);
+                          }
+                        }}
+                      />
                     </td>
                   )}
                 </tr>

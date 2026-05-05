@@ -79,12 +79,21 @@ public class StaffController {
 
     @Operation(summary = "Deactivate staff member (Soft Delete)")
     @DeleteMapping("/{authUserId}")
-    //@PreAuthorize("hasRole('ADMIN')") // Only Admins should deactivate staff
     public ResponseEntity<StandardResponseDTO<Void>> deactivateStaff(@PathVariable Long authUserId) {
         staffService.deactivateStaff(authUserId);
         return ResponseEntity.ok(StandardResponseDTO.<Void>builder()
                 .success(true)
                 .message("Staff member deactivated successfully")
+                .build());
+    }
+
+    @Operation(summary = "Reactivate staff member")
+    @PatchMapping("/{authUserId}/activate")
+    public ResponseEntity<StandardResponseDTO<Void>> activateStaff(@PathVariable Long authUserId) {
+        staffService.activateStaff(authUserId);
+        return ResponseEntity.ok(StandardResponseDTO.<Void>builder()
+                .success(true)
+                .message("Staff member activated successfully")
                 .build());
     }
 }

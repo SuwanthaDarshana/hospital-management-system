@@ -3,10 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
 import { apiClient } from '../api/client';
 import { registerStaff } from '../api/auth';
-import { Users, Search, Trash2, Plus, X, Loader2, Pencil } from 'lucide-react';
+import { Users, Search, Plus, X, Loader2, Pencil } from 'lucide-react';
 import type { Staff, RegisterStaffRequest, StaffUpdateRequest, StandardResponse } from '../types';
 import clsx from 'clsx';
-import ConfirmModal from '../components/ConfirmModal';
+import ActiveToggle from '../components/ActiveToggle';
 
 const getStaff = () =>
   apiClient.get<StandardResponse<Staff[]>>('/api/v1/staff').then(r => r.data.data);
@@ -16,6 +16,9 @@ const updateStaff = (authUserId: number, data: StaffUpdateRequest) =>
 
 const deactivateStaff = (authUserId: number) =>
   apiClient.delete(`/api/v1/staff/${authUserId}`);
+
+const activateStaff = (authUserId: number) =>
+  apiClient.patch(`/api/v1/staff/${authUserId}/activate`);
 
 const DEPARTMENTS = ['RECEPTION', 'PHARMACY', 'LAB', 'NURSING', 'ADMIN', 'BILLING', 'RADIOLOGY'];
 
@@ -29,7 +32,7 @@ const DEPT_COLORS: Record<string, string> = {
   RADIOLOGY: 'bg-indigo-100 text-indigo-700',
 };
 
-// ─── Add Staff Modal (Admin only) ────────────────────────────────────────────
+// ─── Add Staff Modal ──────────────────────────────────────────────────────────
 function AddStaffModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<RegisterStaffRequest>({
@@ -133,7 +136,7 @@ function AddStaffModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ─── Edit Staff Modal ────────────────────────────────────────────────────────
+// ─── Edit Staff Modal ─────────────────────────────────────────────────────────
 function EditStaffModal({ staff, isAdmin, onClose }: { staff: Staff; isAdmin: boolean; onClose: () => void }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<StaffUpdateRequest>({
@@ -207,11 +210,15 @@ function EditStaffModal({ staff, isAdmin, onClose }: { staff: Staff; isAdmin: bo
                 </div>
                 <div>
                   <label className="label">Status</label>
-                  <select className="input" value={form.isActive ? 'true' : 'false'}
-                    onChange={e => setForm(f => ({ ...f, isActive: e.target.value === 'true' }))}>
-                    <option value="true">Active</option>
-                    <option value="false">Inactive</option>
-                  </select>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <ActiveToggle
+                      checked={form.isActive ?? true}
+                      onChange={() => setForm(f => ({ ...f, isActive: !(f.isActive ?? true) }))}
+                    />
+                    <span className={clsx('text-sm font-medium', (form.isActive ?? true) ? 'text-green-600' : 'text-red-500')}>
+                      {(form.isActive ?? true) ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="border-t border-gray-100 pt-2" />
@@ -273,7 +280,7 @@ function EditStaffModal({ staff, isAdmin, onClose }: { staff: Staff; isAdmin: bo
   );
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────────
+// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function StaffPage() {
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'ADMIN';
@@ -281,14 +288,20 @@ export default function StaffPage() {
   const [search, setSearch] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] = useState<Staff | null>(null);
-  const [confirmDeactivate, setConfirmDeactivate] = useState<number | null>(null);
 
   const { data, isLoading } = useQuery({ queryKey: ['staff'], queryFn: getStaff });
 
-  const deleteMutation = useMutation({
+  const deactivateMutation = useMutation({
     mutationFn: (authUserId: number) => deactivateStaff(authUserId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['staff'] }),
   });
+
+  const activateMutation = useMutation({
+    mutationFn: (authUserId: number) => activateStaff(authUserId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['staff'] }),
+  });
+
+  const isPending = deactivateMutation.isPending || activateMutation.isPending;
 
   const staff: Staff[] = (data ?? []).filter(s => {
     if (!search) return true;
@@ -307,15 +320,6 @@ export default function StaffPage() {
     <div className="p-6 space-y-6">
       {showAdd    && <AddStaffModal onClose={() => setShowAdd(false)} />}
       {editTarget && <EditStaffModal staff={editTarget} isAdmin={isAdmin} onClose={() => setEditTarget(null)} />}
-      {confirmDeactivate !== null && (
-        <ConfirmModal
-          title="Deactivate Staff Member"
-          message="Are you sure you want to deactivate this staff member? They will lose access to the system."
-          confirmLabel="Deactivate"
-          onConfirm={() => { deleteMutation.mutate(confirmDeactivate); setConfirmDeactivate(null); }}
-          onCancel={() => setConfirmDeactivate(null)}
-        />
-      )}
 
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -347,13 +351,13 @@ export default function StaffPage() {
                 <th className="th">Email</th>
                 <th className="th">Phone</th>
                 <th className="th">Department</th>
-                <th className="th">Status</th>
+                {isAdmin && <th className="th">Active</th>}
                 <th className="th"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
               {staff.length === 0 ? (
-                <tr><td colSpan={6} className="td text-center py-10 text-gray-400">No staff found.</td></tr>
+                <tr><td colSpan={isAdmin ? 6 : 5} className="td text-center py-10 text-gray-400">No staff found.</td></tr>
               ) : staff.map(s => (
                 <tr key={s.id} className={clsx(
                   'transition-colors group',
@@ -377,32 +381,31 @@ export default function StaffPage() {
                       {s.department || '—'}
                     </span>
                   </td>
+                  {isAdmin && (
+                    <td className="td">
+                      <ActiveToggle
+                        checked={s.isActive}
+                        disabled={isPending}
+                        onChange={() => {
+                          if (s.isActive) {
+                            deactivateMutation.mutate(s.authUserId);
+                          } else {
+                            activateMutation.mutate(s.authUserId);
+                          }
+                        }}
+                      />
+                    </td>
+                  )}
                   <td className="td">
-                    <span className={clsx('badge', s.isActive ? 'badge-active' : 'badge-inactive')}>
-                      {s.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="td">
-                    <div className="flex items-center gap-1">
-                      {canEdit(s) && (
-                        <button
-                          onClick={() => setEditTarget(s)}
-                          className="p-1.5 rounded text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"
-                          title="Edit"
-                        >
-                          <Pencil size={14} />
-                        </button>
-                      )}
-                      {isAdmin && (
-                        <button
-                          onClick={() => setConfirmDeactivate(s.authUserId)}
-                          className="p-1.5 rounded text-gray-400 hover:text-red-500 transition-colors"
-                          title="Deactivate"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      )}
-                    </div>
+                    {canEdit(s) && (
+                      <button
+                        onClick={() => setEditTarget(s)}
+                        className="p-1.5 rounded text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"
+                        title="Edit"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -11,6 +11,7 @@ public interface PatientService {
     List<PatientResponseDTO> getAllPatients();
     PatientResponseDTO updatePatient(Long authUserId, PatientRequestDTO patientRequestDTO);
     void deletePatient(Long authUserId);
+    void activatePatient(Long authUserId);
     List<PatientResponseDTO> searchPatientsDynamic(String name, String phone, String email, String bloodGroup, Boolean isActive);
 
 

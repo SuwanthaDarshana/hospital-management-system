@@ -11,4 +11,5 @@ public interface StaffService {
     StaffResponseDTO updateStaff(Long authUserId, StaffRequestDTO dto, String callerEmail, String callerRole);
     List<StaffResponseDTO> searchStaffDynamic(String name, String phone, String email, String department, Boolean isActive);
     void deactivateStaff(Long authUserId);
+    void activateStaff(Long authUserId);
 }

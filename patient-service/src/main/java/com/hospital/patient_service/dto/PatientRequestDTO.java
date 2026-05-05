@@ -1,5 +1,6 @@
 package com.hospital.patient_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -46,6 +47,7 @@ public class PatientRequestDTO {
     private String bloodGroup;
     
 
+    @JsonProperty("isActive")
     private boolean isActive;
     
 

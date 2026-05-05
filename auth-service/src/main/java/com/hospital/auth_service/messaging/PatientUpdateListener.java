@@ -3,6 +3,7 @@ package com.hospital.auth_service.messaging;
 import com.hospital.auth_service.dto.PatientUpdatedEvent;
 import com.hospital.auth_service.entity.User;
 import com.hospital.auth_service.repository.UserRepository;
+import com.hospital.auth_service.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -15,8 +16,8 @@ import org.springframework.stereotype.Component;
 public class PatientUpdateListener {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenService refreshTokenService;
 
-    // Ensure this queue name matches your RabbitConfig: "patient.update.queue"
     @RabbitListener(queues = "patient.update.queue")
     public void handlePatientUpdated(PatientUpdatedEvent event) {
 
@@ -28,19 +29,24 @@ public class PatientUpdateListener {
                     return new RuntimeException("User not found");
                 });
 
-        // 1. Update Email if changed
         if (event.getEmail() != null && !event.getEmail().isEmpty()) {
-            log.debug("Updating email for user ID: {} to: {}", event.getAuthUserId(), event.getEmail());
             user.setEmail(event.getEmail());
         }
 
-        // 2. Update Password ONLY if a new one is provided
         if (event.getPassword() != null && !event.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(event.getPassword()));
-            log.info("Password updated for user: {}", user.getEmail());
+        }
+
+        if (event.getIsActive() != null) {
+            user.setEnabled(event.getIsActive());
+            log.info("Patient auth account {} for user ID: {}", event.getIsActive() ? "enabled" : "disabled", event.getAuthUserId());
+            if (!event.getIsActive()) {
+                refreshTokenService.revokeAllUserTokens(user);
+                log.info("Refresh tokens revoked for deactivated patient user ID: {}", event.getAuthUserId());
+            }
         }
 
         userRepository.save(user);
-        log.info("Auth Service updated user: {}", user.getEmail());
+        log.info("Auth Service updated patient user: {}", user.getEmail());
     }
 }

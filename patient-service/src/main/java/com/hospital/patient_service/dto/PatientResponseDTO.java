@@ -1,5 +1,6 @@
 package com.hospital.patient_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -21,6 +22,7 @@ public class PatientResponseDTO {
     private String gender;
     private LocalDate dateOfBirth;
     private String bloodGroup;
+    @JsonProperty("isActive")
     private boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

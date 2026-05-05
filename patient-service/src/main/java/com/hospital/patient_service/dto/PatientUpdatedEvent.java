@@ -10,7 +10,8 @@ import lombok.*;
 @Builder
 public class PatientUpdatedEvent {
 
-    private Long authUserId; //find the user id from auth service
+    private Long authUserId;
     private String email;
     private String password;
+    private Boolean isActive;
 }
