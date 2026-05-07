@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
+import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import { apiClient } from '../api/client';
 import { registerStaff } from '../api/auth';
 import { Users, Search, Plus, X, Loader2, Pencil } from 'lucide-react';
@@ -288,6 +289,8 @@ export default function StaffPage() {
   const [search, setSearch] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] = useState<Staff | null>(null);
+
+  useRealtimeSync([{ topic: 'staff', invalidate: [['staff']] }]);
 
   const { data, isLoading } = useQuery({ queryKey: ['staff'], queryFn: getStaff });
 

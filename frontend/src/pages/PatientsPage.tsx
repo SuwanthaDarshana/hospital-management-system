@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
+import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import { getAllPatients, getPatientByAuthUserId, deletePatient, activatePatient } from '../api/patients';
 import { getAppointmentsByDoctor } from '../api/appointments';
 import { Search, UserRound, Phone } from 'lucide-react';
@@ -13,6 +14,8 @@ export default function PatientsPage() {
   const qc = useQueryClient();
   const { user } = useAuthStore();
   const isDoctor = user?.role === 'DOCTOR';
+
+  useRealtimeSync([{ topic: 'patients', invalidate: [['patients'], ['patients-for-doctor']] }]);
 
   // ADMIN / STAFF — fetch all patients
   const { data: allData, isLoading: allLoading } = useQuery({

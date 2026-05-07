@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
+import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import { getAllDoctors, updateDoctor, updateDoctorAvailability } from '../api/doctors';
 import { registerDoctor } from '../api/auth';
 import {
@@ -250,11 +251,11 @@ export default function DoctorsPage() {
 
   const qc = useQueryClient();
 
+  useRealtimeSync([{ topic: 'doctors', invalidate: [['doctors']] }]);
+
   const { data, isLoading } = useQuery({
     queryKey: ['doctors'],
     queryFn: () => getAllDoctors().then(r => r.data.data),
-    refetchInterval: 15_000,        // re-fetch every 15 s so cross-session changes appear automatically
-    refetchIntervalInBackground: false, // pause polling when tab is not visible
   });
 
   const allDoctors: Doctor[] = data ?? [];

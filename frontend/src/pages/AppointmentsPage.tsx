@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
+import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import {
   getAllAppointments, getMyAppointments, getAppointmentsByDoctor,
   cancelAppointment, updateAppointmentStatus, bookAppointment,
@@ -16,7 +17,11 @@ import type { Appointment, Doctor } from '../types';
 function BookModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
   const { user } = useAuthStore();
-  const { data: doctorsData } = useQuery({ queryKey: ['doctors'], queryFn: () => getAllDoctors().then(r => r.data.data) });
+  const { data: doctorsData } = useQuery({
+    queryKey: ['doctors'],
+    queryFn: () => getAllDoctors().then(r => r.data.data),
+    staleTime: 0,
+  });
   const doctors: Doctor[] = (doctorsData ?? []).filter(d => d.availabilityStatus === 'AVAILABLE');
 
   const [form, setForm] = useState({
@@ -131,6 +136,11 @@ export default function AppointmentsPage() {
   const [filterStatus, setFilterStatus] = useState('ALL');
   const isAdminOrStaff = user?.role === 'ADMIN' || user?.role === 'STAFF';
   const isDoctor = user?.role === 'DOCTOR';
+
+  useRealtimeSync([{
+    topic: 'appointments',
+    invalidate: [['appointments-all'], ['appointments-my'], ['appointments-doctor']],
+  }]);
 
   const { data, isLoading } = useQuery({
     queryKey: isAdminOrStaff

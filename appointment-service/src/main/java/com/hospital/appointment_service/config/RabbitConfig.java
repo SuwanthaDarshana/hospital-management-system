@@ -29,6 +29,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Binding appointmentUpdatedBinding() {
+        return BindingBuilder.bind(appointmentQueue()).to(appointmentExchange()).with(APPOINTMENT_UPDATED_KEY);
+    }
+
+    @Bean
     public Jackson2JsonMessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }

@@ -94,6 +94,12 @@ spring:
           filters:
             - name: JwtFilter
 
+        # ── WebSocket (STOMP) — no JWT, auth handled inside STOMP CONNECT ──
+        - id: websocket-route
+          uri: lb://notification-service
+          predicates:
+            - Path=/ws/**
+
 jwt:
   secret: ${JWT_SECRET}
 

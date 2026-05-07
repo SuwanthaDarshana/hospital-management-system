@@ -150,6 +150,13 @@ public class DoctorServiceImpl implements DoctorService {
         doctor.setUpdatedAt(java.time.LocalDateTime.now());
         doctorRepository.save(doctor);
         log.info("Availability status for doctor {} updated to {} by {}", authUserId, status, callerEmail);
+
+        rabbitTemplate.convertAndSend(
+                RabbitConfig.DOCTOR_UPDATE_EXCHANGE,
+                RabbitConfig.DOCTOR_UPDATE_ROUTING_KEY,
+                DoctorUpdatedEvent.builder().authUserId(authUserId).build()
+        );
+
         return mapToResponse(doctor);
     }
 

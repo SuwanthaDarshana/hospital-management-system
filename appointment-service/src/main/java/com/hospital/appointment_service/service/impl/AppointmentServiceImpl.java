@@ -1,5 +1,6 @@
 package com.hospital.appointment_service.service.impl;
 
+import com.hospital.appointment_service.config.RabbitConfig;
 import com.hospital.appointment_service.dto.AppointmentRequestDTO;
 import com.hospital.appointment_service.dto.AppointmentResponseDTO;
 import com.hospital.appointment_service.dto.AppointmentStatusUpdateDTO;
@@ -10,10 +11,12 @@ import com.hospital.appointment_service.repository.AppointmentRepository;
 import com.hospital.appointment_service.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -22,6 +25,7 @@ import java.util.stream.Collectors;
 public class AppointmentServiceImpl implements AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     @Transactional
@@ -53,6 +57,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Appointment saved = appointmentRepository.save(appointment);
         log.info("Appointment booked: id={}, patient={}, doctor={}", saved.getId(), patientEmail, request.getDoctorAuthUserId());
+        rabbitTemplate.convertAndSend(RabbitConfig.APPOINTMENT_EXCHANGE, RabbitConfig.APPOINTMENT_CREATED_KEY,
+                Map.of("type", "appointments", "action", "created", "id", saved.getId()));
         return toDTO(saved);
     }
 
@@ -106,6 +112,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Appointment updated = appointmentRepository.save(appointment);
         log.info("Appointment {} status updated to {} by {}", id, dto.getStatus(), userEmail);
+        rabbitTemplate.convertAndSend(RabbitConfig.APPOINTMENT_EXCHANGE, RabbitConfig.APPOINTMENT_UPDATED_KEY,
+                Map.of("type", "appointments", "action", "updated", "id", id));
         return toDTO(updated);
     }
 
@@ -125,6 +133,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointmentRepository.save(appointment);
         log.info("Appointment {} cancelled by {}", id, patientEmail);
+        rabbitTemplate.convertAndSend(RabbitConfig.APPOINTMENT_EXCHANGE, RabbitConfig.APPOINTMENT_UPDATED_KEY,
+                Map.of("type", "appointments", "action", "cancelled", "id", id));
     }
 
     @Override
